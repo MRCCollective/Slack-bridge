@@ -1,0 +1,41 @@
+@page
+@model SlackBridge.Web.Pages.Admin.Billing.IndexModel
+@{
+    ViewData["Title"] = "Billing";
+}
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="mb-1">Billing</h1>
+        <p class="text-muted mb-0">Manage the local subscription plan for this instance.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-success">@Model.StatusMessage</div>
+}
+
+<div class="mb-4">
+    <div class="text-muted">Current plan</div>
+    <div class="fs-3">@Model.Subscription.Plan</div>
+    <div class="text-muted">Status: @Model.Subscription.Status</div>
+</div>
+
+<div class="row g-3">
+@foreach (var plan in Model.Plans)
+{
+    <div class="col-md-4">
+        <div class="plan-card p-3 h-100">
+            <h2 class="h4">@plan.Plan</h2>
+            <p class="mb-1">@plan.Limits.EventsPerMonth events/month</p>
+            <p class="mb-1">@plan.Limits.Projects projects</p>
+            <p>@plan.Limits.ApiKeys API keys</p>
+            <form method="post">
+                <input type="hidden" name="plan" value="@plan.Plan" />
+                <button class="btn btn-primary" type="submit">Set plan</button>
+            </form>
+        </div>
+    </div>
+}
+</div>

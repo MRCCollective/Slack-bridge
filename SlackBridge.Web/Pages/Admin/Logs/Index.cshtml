@@ -1,0 +1,30 @@
+@page
+@model SlackBridge.Web.Pages.Admin.Logs.IndexModel
+@{
+    ViewData["Title"] = "Logs";
+}
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="mb-1">Logs</h1>
+        <p class="text-muted mb-0">Recent event deliveries and failures.</p>
+    </div>
+</div>
+
+<table class="table table-striped align-middle">
+    <thead>
+    <tr><th>Created</th><th>Event</th><th>Status</th><th>Slack</th><th>Result</th></tr>
+    </thead>
+    <tbody>
+    @foreach (var log in Model.Logs)
+    {
+        <tr>
+            <td>@log.CreatedAtUtc</td>
+            <td><code>@log.EventKey</code></td>
+            <td>@log.Status</td>
+            <td>@log.SlackStatusCode</td>
+            <td class="text-truncate" style="max-width: 420px;">@log.ResultMessage</td>
+        </tr>
+    }
+    </tbody>
+</table>

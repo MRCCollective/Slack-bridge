@@ -1,0 +1,13 @@
+@page "{id:int}"
+@model SlackBridge.Web.Pages.Admin.EventDefinitions.DeleteModel
+@{
+    ViewData["Title"] = "Delete event";
+}
+
+<h1>Delete event</h1>
+<p>Delete <strong>@Model.EventDefinition.Key</strong>?</p>
+<form method="post">
+    <input type="hidden" asp-for="EventDefinition.Id" />
+    <button class="btn btn-danger" type="submit">Delete</button>
+    <a class="btn btn-link" asp-page="Index">Cancel</a>
+</form>

@@ -1,0 +1,39 @@
+@page "{id:int}"
+@model SlackBridge.Web.Pages.Admin.EventDefinitions.EditModel
+@{
+    ViewData["Title"] = "Edit event";
+}
+
+<h1>Edit event</h1>
+<form method="post">
+    <input type="hidden" asp-for="EventDefinition.Id" />
+    <input type="hidden" asp-for="EventDefinition.CustomerInstanceId" />
+    <input type="hidden" asp-for="EventDefinition.CreatedAtUtc" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row">
+        <div class="col-lg-6 mb-3">
+            <label asp-for="EventDefinition.ProjectId" class="form-label">Project</label>
+            <select asp-for="EventDefinition.ProjectId" asp-items="Model.ProjectOptions" class="form-select"></select>
+        </div>
+        <div class="col-lg-6 mb-3">
+            <label asp-for="EventDefinition.Key" class="form-label"></label>
+            <input asp-for="EventDefinition.Key" class="form-control" />
+        </div>
+    </div>
+    <div class="mb-3">
+        <label asp-for="EventDefinition.SlackWebhookUrl" class="form-label"></label>
+        <input asp-for="EventDefinition.SlackWebhookUrl" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="EventDefinition.Template" class="form-label"></label>
+        <textarea asp-for="EventDefinition.Template" class="form-control font-monospace" rows="10"></textarea>
+    </div>
+    <div class="form-check mb-3">
+        <input asp-for="EventDefinition.IsActive" class="form-check-input" />
+        <label asp-for="EventDefinition.IsActive" class="form-check-label"></label>
+    </div>
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-link" asp-page="Index">Cancel</a>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

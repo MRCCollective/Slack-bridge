@@ -1,0 +1,40 @@
+@page
+@model SlackBridge.Web.Pages.Admin.ApiKeys.IndexModel
+@{
+    ViewData["Title"] = "API Keys";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>API Keys</h1>
+    <a class="btn btn-primary" asp-page="Create">New API key</a>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.CreatedKey))
+{
+    <div class="alert alert-success">
+        <div class="fw-semibold">New key created. Store it now; it will not be shown again.</div>
+        <code>@Model.CreatedKey</code>
+    </div>
+}
+
+<table class="table table-striped align-middle">
+    <thead>
+    <tr><th>Name</th><th>Project</th><th>Prefix</th><th>Active</th><th>Last used</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.ApiKeys)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.Project?.Name</td>
+            <td><code>@item.KeyPrefix</code></td>
+            <td>@item.IsActive</td>
+            <td>@item.LastUsedAtUtc</td>
+            <td class="text-end">
+                <a class="btn btn-sm btn-outline-secondary" asp-page="Edit" asp-route-id="@item.Id">Edit</a>
+                <a class="btn btn-sm btn-outline-danger" asp-page="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

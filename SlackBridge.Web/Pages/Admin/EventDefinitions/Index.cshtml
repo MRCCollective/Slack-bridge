@@ -1,0 +1,38 @@
+@page
+@model SlackBridge.Web.Pages.Admin.EventDefinitions.IndexModel
+@{
+    ViewData["Title"] = "Event Definitions";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Event Definitions</h1>
+    <a class="btn btn-primary" asp-page="Create">New event</a>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-info">@Model.StatusMessage</div>
+}
+
+<table class="table table-striped align-middle">
+    <thead>
+    <tr><th>Key</th><th>Project</th><th>Active</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.EventDefinitions)
+    {
+        <tr>
+            <td><code>@item.Key</code></td>
+            <td>@item.Project?.Name</td>
+            <td>@item.IsActive</td>
+            <td class="text-end">
+                <form method="post" asp-page-handler="Test" asp-route-id="@item.Id" class="d-inline">
+                    <button class="btn btn-sm btn-outline-primary" type="submit">Test send</button>
+                </form>
+                <a class="btn btn-sm btn-outline-secondary" asp-page="Edit" asp-route-id="@item.Id">Edit</a>
+                <a class="btn btn-sm btn-outline-danger" asp-page="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

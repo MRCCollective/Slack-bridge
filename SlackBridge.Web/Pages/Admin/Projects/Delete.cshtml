@@ -1,0 +1,13 @@
+@page "{id:int}"
+@model SlackBridge.Web.Pages.Admin.Projects.DeleteModel
+@{
+    ViewData["Title"] = "Delete project";
+}
+
+<h1>Delete project</h1>
+<p>Delete <strong>@Model.Project.Name</strong>?</p>
+<form method="post">
+    <input type="hidden" asp-for="Project.Id" />
+    <button class="btn btn-danger" type="submit">Delete</button>
+    <a class="btn btn-link" asp-page="Index">Cancel</a>
+</form>

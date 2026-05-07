@@ -1,0 +1,23 @@
+@page
+@model SlackBridge.Web.Pages.Admin.ApiKeys.CreateModel
+@{
+    ViewData["Title"] = "New API key";
+}
+
+<h1>New API key</h1>
+<form method="post" class="col-lg-6">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Input.ProjectId" class="form-label"></label>
+        <select asp-for="Input.ProjectId" asp-items="Model.ProjectOptions" class="form-select"></select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Name" class="form-label"></label>
+        <input asp-for="Input.Name" class="form-control" />
+        <span asp-validation-for="Input.Name" class="text-danger"></span>
+    </div>
+    <button class="btn btn-primary" type="submit">Create</button>
+    <a class="btn btn-link" asp-page="Index">Cancel</a>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

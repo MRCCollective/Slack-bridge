@@ -1,0 +1,26 @@
+@page "{id:int}"
+@model SlackBridge.Web.Pages.Admin.Projects.EditModel
+@{
+    ViewData["Title"] = "Edit project";
+}
+
+<h1>Edit project</h1>
+<form method="post" class="col-lg-6">
+    <input type="hidden" asp-for="Project.Id" />
+    <input type="hidden" asp-for="Project.CustomerInstanceId" />
+    <input type="hidden" asp-for="Project.CreatedAtUtc" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Project.Name" class="form-label"></label>
+        <input asp-for="Project.Name" class="form-control" />
+        <span asp-validation-for="Project.Name" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Project.Description" class="form-label"></label>
+        <textarea asp-for="Project.Description" class="form-control"></textarea>
+    </div>
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-link" asp-page="Index">Cancel</a>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,32 @@
+@page "{id:int}"
+@model SlackBridge.Web.Pages.Admin.ApiKeys.EditModel
+@{
+    ViewData["Title"] = "Edit API key";
+}
+
+<h1>Edit API key</h1>
+<form method="post" class="col-lg-6">
+    <input type="hidden" asp-for="ApiKey.Id" />
+    <input type="hidden" asp-for="ApiKey.CustomerInstanceId" />
+    <input type="hidden" asp-for="ApiKey.KeyHash" />
+    <input type="hidden" asp-for="ApiKey.KeyPrefix" />
+    <input type="hidden" asp-for="ApiKey.CreatedAtUtc" />
+    <input type="hidden" asp-for="ApiKey.LastUsedAtUtc" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="ApiKey.ProjectId" class="form-label">Project</label>
+        <select asp-for="ApiKey.ProjectId" asp-items="Model.ProjectOptions" class="form-select"></select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="ApiKey.Name" class="form-label"></label>
+        <input asp-for="ApiKey.Name" class="form-control" />
+    </div>
+    <div class="form-check mb-3">
+        <input asp-for="ApiKey.IsActive" class="form-check-input" />
+        <label asp-for="ApiKey.IsActive" class="form-check-label"></label>
+    </div>
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-link" asp-page="Index">Cancel</a>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

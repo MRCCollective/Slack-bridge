@@ -1,0 +1,13 @@
+@page "{id:int}"
+@model SlackBridge.Web.Pages.Admin.ApiKeys.DeleteModel
+@{
+    ViewData["Title"] = "Delete API key";
+}
+
+<h1>Delete API key</h1>
+<p>Delete <strong>@Model.ApiKey.Name</strong>?</p>
+<form method="post">
+    <input type="hidden" asp-for="ApiKey.Id" />
+    <button class="btn btn-danger" type="submit">Delete</button>
+    <a class="btn btn-link" asp-page="Index">Cancel</a>
+</form>

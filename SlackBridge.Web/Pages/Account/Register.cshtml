@@ -1,0 +1,33 @@
+@page
+@model SlackBridge.Web.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Create admin";
+}
+
+<h1>Create admin</h1>
+
+@if (Model.SetupComplete)
+{
+    <div class="alert alert-info">Initial setup is complete. Ask an administrator to invite additional users.</div>
+}
+else
+{
+    <form method="post" class="col-lg-5">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="Input.CompanyName" class="form-label"></label>
+            <input asp-for="Input.CompanyName" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.Email" class="form-label"></label>
+            <input asp-for="Input.Email" class="form-control" autocomplete="username" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.Password" class="form-label"></label>
+            <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
+        </div>
+        <button class="btn btn-primary" type="submit">Create admin</button>
+    </form>
+}
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
