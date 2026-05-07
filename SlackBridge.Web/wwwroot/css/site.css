@@ -226,14 +226,18 @@ code,
 }
 
 pre {
-  background: #0b1220 !important;
-  border: 1px solid #1e293b !important;
+  background: #ffffff !important;
+  border: 1px solid var(--sb-border) !important;
   border-radius: var(--sb-radius) !important;
-  color: #dbeafe;
+  color: var(--sb-text);
+  font-size: 0.94rem;
+  line-height: 1.65;
+  overflow-x: auto;
+  white-space: pre;
 }
 
 code {
-  color: var(--sb-purple);
+  color: #1e293b;
 }
 
 pre code {
