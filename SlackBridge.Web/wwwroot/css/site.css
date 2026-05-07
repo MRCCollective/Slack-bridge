@@ -225,6 +225,18 @@ code,
   font-family: var(--sb-mono);
 }
 
+.api-key-value {
+  background: #f8fafc;
+  border: 1px solid var(--sb-border);
+  border-radius: var(--sb-radius);
+  color: #1e293b;
+  display: inline-block;
+  max-width: 32rem;
+  overflow-x: auto;
+  padding: 0.35rem 0.5rem;
+  white-space: nowrap;
+}
+
 pre {
   background: #ffffff !important;
   border: 1px solid var(--sb-border) !important;

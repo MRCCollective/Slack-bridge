@@ -11,6 +11,7 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/Admin");
 });
 builder.Services.AddControllers();
+builder.Services.AddDataProtection();
 builder.Services.AddDbContext<SlackBridgeDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SlackBridge")));
 builder.Services
@@ -31,6 +32,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddHttpClient<ISlackService, SlackService>();
 builder.Services.AddScoped<ICustomerInstanceContext, CustomerInstanceContext>();
 builder.Services.AddScoped<IApiKeyGenerator, ApiKeyGenerator>();
+builder.Services.AddScoped<IApiKeySecretProtector, ApiKeySecretProtector>();
 builder.Services.AddScoped<IApiKeyValidator, ApiKeyValidator>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IEventLogService, EventLogService>();

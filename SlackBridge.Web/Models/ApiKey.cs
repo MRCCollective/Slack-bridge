@@ -21,6 +21,8 @@ public sealed class ApiKey
     [MaxLength(12)]
     public string KeyPrefix { get; set; } = string.Empty;
 
+    public string? EncryptedKey { get; set; }
+
     public bool IsActive { get; set; } = true;
     public DateTimeOffset CreatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? LastUsedAtUtc { get; set; }

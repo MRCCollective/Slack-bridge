@@ -1,0 +1,114 @@
+@page
+@model SlackBridge.Web.Pages.Admin.Instructions.IndexModel
+@{
+    ViewData["Title"] = "Instructions";
+}
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="mb-1">Instructions</h1>
+        <p class="text-muted mb-0">Set up Slack delivery, configure events, and send messages from your apps.</p>
+    </div>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">1. Create a Slack Incoming Webhook</h2>
+    <ol class="mb-0">
+        <li>Open Slack API app management and create or select an app for your workspace.</li>
+        <li>Enable <strong>Incoming Webhooks</strong>.</li>
+        <li>Create a webhook for the Slack channel that should receive messages.</li>
+        <li>Copy the webhook URL. It should look like <code>https://hooks.slack.com/services/...</code>.</li>
+        <li>Store the webhook URL in Slack Bridge on the event definition.</li>
+    </ol>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">2. Configure Slack Bridge</h2>
+    <ol class="mb-0">
+        <li>Create a <strong>Project</strong> for the application that will send events.</li>
+        <li>Create an <strong>API Key</strong> for that project and store it in the calling app's secret configuration.</li>
+        <li>Create an <strong>Event Definition</strong> with a stable key such as <code>user_signup</code>.</li>
+        <li>Paste the Slack webhook URL into the event definition.</li>
+        <li>Write a Scriban template using fields from the event payload.</li>
+        <li>Use <strong>Test send</strong> to confirm Slack delivery.</li>
+    </ol>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">3. Example event definition</h2>
+    <div class="row g-3">
+        <div class="col-lg-5">
+            <p class="mb-2"><strong>Event key</strong></p>
+            <pre><code>user_signup</code></pre>
+        </div>
+        <div class="col-lg-7">
+            <p class="mb-2"><strong>Template</strong></p>
+            <pre><code>New signup
+Email: {{ email }}
+Plan: {{ plan }}
+Source: {{ source }}</code></pre>
+        </div>
+    </div>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">4. Send an event from .NET</h2>
+    <pre><code>public sealed class SlackBridgeClient(HttpClient httpClient, IConfiguration configuration)
+{
+    public async Task SendAsync(string key, object data, CancellationToken cancellationToken = default)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/events");
+        request.Headers.Add("x-api-key", configuration["SlackBridge:ApiKey"]);
+        request.Content = JsonContent.Create(new
+        {
+            key,
+            data
+        });
+
+        using var response = await httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
+}</code></pre>
+    <p class="text-muted mb-2">Register the client in the calling app:</p>
+    <pre><code>builder.Services.AddHttpClient&lt;SlackBridgeClient&gt;(client =&gt;
+{
+    client.BaseAddress = new Uri(builder.Configuration["SlackBridge:BaseUrl"]!);
+});</code></pre>
+    <p class="text-muted mb-2">Call it from application code or a Razor Page handler:</p>
+    <pre class="mb-0"><code>await slackBridge.SendAsync("user_signup", new
+{
+    email = user.Email,
+    plan = "pro",
+    source = "signup-page"
+}, cancellationToken);</code></pre>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">5. Send an event from JavaScript</h2>
+    <pre class="mb-0"><code>await fetch("https://your-slack-bridge.example.com/api/events", {
+  method: "POST",
+  headers: {
+    "content-type": "application/json",
+    "x-api-key": "sb_your_project_key"
+  },
+  body: JSON.stringify({
+    key: "user_signup",
+    data: {
+      email: "user@example.com",
+      plan: "pro",
+      source: "signup-page"
+    }
+  })
+});</code></pre>
+</div>
+
+<div class="surface-card p-4">
+    <h2 class="h4">Troubleshooting</h2>
+    <ul class="mb-0">
+        <li><code>401</code>: missing, inactive, or incorrect API key.</li>
+        <li><code>404</code>: no active event definition matches the event key for that project.</li>
+        <li><code>429</code>: current plan usage limit has been reached.</li>
+        <li><code>502</code>: Slack delivery failed. Check the event log result and webhook URL.</li>
+        <li>Use <strong>Logs</strong> to inspect payloads, rendered messages, Slack status codes, and retry state.</li>
+    </ul>
+</div>

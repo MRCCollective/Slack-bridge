@@ -1,0 +1,107 @@
+@page
+@model SlackBridge.Web.Pages.Admin.AI.IndexModel
+@{
+    ViewData["Title"] = "AI";
+}
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="mb-1">AI</h1>
+        <p class="text-muted mb-0">Use this page as context when asking an AI assistant to fix or add an integration.</p>
+    </div>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">Project brief</h2>
+    <p>
+        Slack Bridge is a single-tenant ASP.NET Core 9 application that receives event payloads from internal apps,
+        renders Scriban templates, and sends messages to Slack Incoming Webhooks.
+    </p>
+    <p class="mb-0">
+        The app uses Razor Pages, Web API controllers, ASP.NET Core Identity, EF Core with SQL Server, hashed API keys,
+        local plan enforcement, event logs, and a hosted retry worker for failed Slack deliveries.
+    </p>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">Copy this prompt</h2>
+    <pre><code>You are working on Slack Bridge.
+
+Goal: fix or add an integration without changing unrelated behavior.
+
+Architecture:
+- .NET 9 ASP.NET Core monolith.
+- Razor Pages admin UI under /Pages/Admin.
+- Web API endpoint: POST /api/events.
+- EF Core SQL Server DbContext: SlackBridgeDbContext.
+- Identity user model: ApplicationUser.
+- Single customer instance for now, scoped by CustomerInstanceId = 1.
+- Future multi-tenancy is expected, so keep customer-scoped data explicit.
+
+Core event flow:
+1. Validate x-api-key using IApiKeyValidator.
+2. Find active EventDefinition for the API key project and event key.
+3. Enforce usage limits with IUsageService.
+4. Render the Scriban template with ITemplateService.
+5. Send the rendered text through ISlackService.
+6. Write EventLog for success or failure.
+7. Mark failed Slack sends for retry with FailedSlackRetryWorker.
+
+Important files:
+- Controllers/EventsController.cs
+- Data/SlackBridgeDbContext.cs
+- Models/Project.cs
+- Models/ApiKey.cs
+- Models/EventDefinition.cs
+- Models/EventLog.cs
+- Services/EventIngestionService.cs
+- Services/SlackService.cs
+- Services/TemplateService.cs
+- Services/UsageService.cs
+- Services/FailedSlackRetryWorker.cs
+- Pages/Admin/EventDefinitions/
+
+Rules:
+- Keep changes small and production-ready.
+- Use dependency injection.
+- Do not store raw API keys.
+- Do not bypass Identity for admin pages.
+- Do not hardcode customer-specific logic outside ICustomerInstanceContext.
+- Add or update EF migrations when the database model changes.
+- Run dotnet build before finishing.
+
+Task:
+Fix the integration issue described below.</code></pre>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="surface-card p-4 h-100">
+            <h2 class="h4">Integration checklist</h2>
+            <ul class="mb-0">
+                <li>Confirm the caller sends <code>x-api-key</code>.</li>
+                <li>Confirm the API key is active and belongs to the expected project.</li>
+                <li>Confirm the event key exactly matches an active event definition.</li>
+                <li>Render the Scriban template with representative JSON.</li>
+                <li>Check the Slack webhook URL and response status.</li>
+                <li>Inspect <code>EventLogs</code> for result messages and retry state.</li>
+                <li>Check monthly usage limits if requests return <code>429</code>.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="surface-card p-4 h-100">
+            <h2 class="h4">Useful request shape</h2>
+            <pre class="mb-0"><code>POST /api/events
+x-api-key: sb_...
+
+{
+  "key": "user_signup",
+  "data": {
+    "email": "user@example.com",
+    "plan": "pro"
+  }
+}</code></pre>
+        </div>
+    </div>
+</div>

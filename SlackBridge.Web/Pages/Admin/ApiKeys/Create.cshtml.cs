@@ -12,6 +12,7 @@ namespace SlackBridge.Web.Pages.Admin.ApiKeys;
 public sealed class CreateModel(
     SlackBridgeDbContext dbContext,
     IApiKeyGenerator apiKeyGenerator,
+    IApiKeySecretProtector apiKeySecretProtector,
     ICustomerInstanceContext customerInstanceContext,
     IUsageService usageService) : PageModel
 {
@@ -48,7 +49,8 @@ public sealed class CreateModel(
             ProjectId = Input.ProjectId,
             Name = Input.Name,
             KeyHash = apiKeyGenerator.Hash(rawKey),
-            KeyPrefix = apiKeyGenerator.Prefix(rawKey)
+            KeyPrefix = apiKeyGenerator.Prefix(rawKey),
+            EncryptedKey = apiKeySecretProtector.Protect(rawKey)
         });
 
         await dbContext.SaveChangesAsync(cancellationToken);

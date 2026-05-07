@@ -6,20 +6,43 @@ using SlackBridge.Web.Services;
 
 namespace SlackBridge.Web.Pages.Admin.ApiKeys;
 
-public sealed class IndexModel(SlackBridgeDbContext dbContext, ICustomerInstanceContext customerInstanceContext) : PageModel
+public sealed class IndexModel(
+    SlackBridgeDbContext dbContext,
+    ICustomerInstanceContext customerInstanceContext,
+    IApiKeySecretProtector apiKeySecretProtector) : PageModel
 {
-    public IReadOnlyList<ApiKey> ApiKeys { get; private set; } = [];
+    public IReadOnlyList<ApiKeyListItem> ApiKeys { get; private set; } = [];
     public string? CreatedKey { get; private set; }
 
     public async Task OnGetAsync(string? createdKey, CancellationToken cancellationToken)
     {
         CreatedKey = createdKey;
-        ApiKeys = await dbContext.ApiKeys
+        var apiKeys = await dbContext.ApiKeys
             .Include(apiKey => apiKey.Project)
             .Where(apiKey => apiKey.CustomerInstanceId == customerInstanceContext.CustomerInstanceId)
             .OrderBy(apiKey => apiKey.Project!.Name)
             .ThenBy(apiKey => apiKey.Name)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+
+        ApiKeys = apiKeys
+            .Select(apiKey => new ApiKeyListItem(
+                apiKey.Id,
+                apiKey.Name,
+                apiKey.Project?.Name ?? "",
+                apiKey.KeyPrefix,
+                apiKeySecretProtector.Unprotect(apiKey.EncryptedKey),
+                apiKey.IsActive,
+                apiKey.LastUsedAtUtc))
+            .ToList();
     }
+
+    public sealed record ApiKeyListItem(
+        int Id,
+        string Name,
+        string ProjectName,
+        string KeyPrefix,
+        string? ApiKey,
+        bool IsActive,
+        DateTimeOffset? LastUsedAtUtc);
 }

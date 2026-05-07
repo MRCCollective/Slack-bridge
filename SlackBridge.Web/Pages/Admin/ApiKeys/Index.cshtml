@@ -12,22 +12,34 @@
 @if (!string.IsNullOrWhiteSpace(Model.CreatedKey))
 {
     <div class="alert alert-success">
-        <div class="fw-semibold">New key created. Store it now; it will not be shown again.</div>
+        <div class="fw-semibold">New key created.</div>
         <code>@Model.CreatedKey</code>
     </div>
 }
 
 <table class="table table-striped align-middle">
     <thead>
-    <tr><th>Name</th><th>Project</th><th>Prefix</th><th>Active</th><th>Last used</th><th></th></tr>
+    <tr><th>Name</th><th>Project</th><th>API key</th><th>Active</th><th>Last used</th><th></th></tr>
     </thead>
     <tbody>
     @foreach (var item in Model.ApiKeys)
     {
         <tr>
             <td>@item.Name</td>
-            <td>@item.Project?.Name</td>
-            <td><code>@item.KeyPrefix</code></td>
+            <td>@item.ProjectName</td>
+            <td>
+                @if (!string.IsNullOrWhiteSpace(item.ApiKey))
+                {
+                    <div class="d-flex gap-2 align-items-center">
+                        <code class="api-key-value">@item.ApiKey</code>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-copy="@item.ApiKey">Copy</button>
+                    </div>
+                }
+                else
+                {
+                    <span class="text-muted">Unavailable for older hashed-only key: <code>@item.KeyPrefix...</code></span>
+                }
+            </td>
             <td>@item.IsActive</td>
             <td>@item.LastUsedAtUtc</td>
             <td class="text-end">
@@ -38,3 +50,16 @@
     }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll("[data-copy]").forEach((button) => {
+            button.addEventListener("click", async () => {
+                await navigator.clipboard.writeText(button.dataset.copy);
+                const originalText = button.textContent;
+                button.textContent = "Copied";
+                window.setTimeout(() => button.textContent = originalText, 1200);
+            });
+        });
+    </script>
+}
