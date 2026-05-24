@@ -1,0 +1,47 @@
+name: Deploy SlackBridge to Oracle VM
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - "SlackBridge.Web/**"
+      - ".github/workflows/deploy-oracle.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Write SSH key
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.ORACLE_SSH_PRIVATE_KEY }}" > ~/.ssh/oracle.key
+          chmod 600 ~/.ssh/oracle.key
+
+      - name: Trust Oracle VM host key
+        shell: bash
+        run: |
+          ssh-keyscan -H "${{ vars.ORACLE_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy
+        shell: pwsh
+        run: |
+          ./SlackBridge.Web/deploy/oracle/deploy-oracle.ps1 `
+            -HostName "${{ vars.ORACLE_HOST }}" `
+            -UserName "${{ vars.ORACLE_SSH_USER }}" `
+            -KeyPath "$HOME/.ssh/oracle.key" `
+            -RemoteAppDir "${{ vars.ORACLE_REMOTE_APP_DIR }}" `
+            -PublicUrl "${{ vars.SLACKBRIDGE_PUBLIC_URL }}" `
+            -UploadCompose

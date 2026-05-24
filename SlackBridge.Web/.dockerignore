@@ -1,8 +1,8 @@
 bin/
 bin_verify/
 obj/
+*.log
+.git/
 .vs/
 .vscode/
-*.user
-*.suo
 appsettings.*.local.json

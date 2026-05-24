@@ -13,7 +13,22 @@ builder.Services.AddRazorPages(options =>
 builder.Services.AddControllers();
 builder.Services.AddDataProtection();
 builder.Services.AddDbContext<SlackBridgeDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SlackBridge")));
+{
+    var provider = builder.Configuration["Database:Provider"];
+    var connectionString = builder.Configuration.GetConnectionString("SlackBridge");
+
+    if (string.Equals(provider, "MariaDb", StringComparison.OrdinalIgnoreCase))
+    {
+        var serverVersion = ServerVersion.Parse(
+            builder.Configuration["MySql:ServerVersion"] ?? "11.4.0-mariadb");
+        options.UseMySql(connectionString, serverVersion, mySqlOptions =>
+            mySqlOptions.EnableRetryOnFailure());
+    }
+    else
+    {
+        options.UseSqlServer(connectionString);
+    }
+});
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
