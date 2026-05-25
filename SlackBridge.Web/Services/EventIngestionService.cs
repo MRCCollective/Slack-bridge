@@ -24,6 +24,7 @@ public sealed class EventIngestionService(
         await usageService.EnsureEventLimitAsync(cancellationToken);
 
         var definition = await dbContext.EventDefinitions
+            .Include(definition => definition.Project)
             .SingleOrDefaultAsync(definition =>
                 definition.CustomerInstanceId == apiKey.CustomerInstanceId &&
                 definition.ProjectId == apiKey.ProjectId &&
@@ -51,7 +52,7 @@ public sealed class EventIngestionService(
         try
         {
             renderedMessage = await templateService.RenderAsync(definition.Template, request.Data, cancellationToken);
-            var slackResult = await slackService.SendAsync(definition.SlackWebhookUrl, renderedMessage, cancellationToken);
+            var slackResult = await slackService.SendAsync(definition.Project!.SlackWebhookUrl, renderedMessage, cancellationToken);
 
             var successLog = await eventLogService.WriteAsync(new EventLog
             {

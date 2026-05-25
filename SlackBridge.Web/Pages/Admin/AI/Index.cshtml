@@ -15,7 +15,7 @@
     <h2 class="h4">Project brief</h2>
     <p>
         Slack Bridge is a single-tenant ASP.NET Core 9 application that receives event payloads from internal apps,
-        renders Scriban templates, and sends messages to Slack Incoming Webhooks.
+        renders Scriban templates, and sends messages to project-level Slack Incoming Webhooks.
     </p>
     <p class="mb-0">
         The app uses Razor Pages, Web API controllers, ASP.NET Core Identity, EF Core with SQL Server, hashed API keys,
@@ -43,7 +43,7 @@ Core event flow:
 2. Find active EventDefinition for the API key project and event key.
 3. Enforce usage limits with IUsageService.
 4. Render the Scriban template with ITemplateService.
-5. Send the rendered text through ISlackService.
+5. Send the rendered text through ISlackService using the project Slack webhook URL.
 6. Write EventLog for success or failure.
 7. Mark failed Slack sends for retry with FailedSlackRetryWorker.
 
@@ -83,7 +83,7 @@ Fix the integration issue described below.</code></pre>
                 <li>Confirm the API key is active and belongs to the expected project.</li>
                 <li>Confirm the event key exactly matches an active event definition.</li>
                 <li>Render the Scriban template with representative JSON.</li>
-                <li>Check the Slack webhook URL and response status.</li>
+                <li>Check the project Slack webhook URL and response status.</li>
                 <li>Inspect <code>EventLogs</code> for result messages and retry state.</li>
                 <li>Check monthly usage limits if requests return <code>429</code>.</li>
             </ul>

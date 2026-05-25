@@ -27,9 +27,9 @@ Your App -> Slack Bridge API -> Scriban Template -> Slack Incoming Webhook
 
 1. An application sends an event such as `user_signup` or `payment_received`.
 2. Slack Bridge authenticates the request with a project API key.
-3. The event key is matched to an `EventDefinition`.
+3. The event key is matched to an `EventDefinition` for the API key's project.
 4. The configured Scriban template is rendered with the event data.
-5. The rendered message is posted to Slack.
+5. The rendered message is posted to the project's Slack webhook.
 6. Success or failure is written to `EventLogs`.
 
 ## Example
@@ -74,7 +74,7 @@ Plan: pro
 - Hashed API key storage
 - Configurable projects, API keys, and event definitions
 - Dynamic Scriban message templates
-- Slack Incoming Webhook delivery
+- Project-level Slack Incoming Webhook delivery
 - Razor Pages admin dashboard
 - ASP.NET Core Identity login/logout and first-admin setup
 - Admin and Member roles
@@ -178,9 +178,9 @@ http://localhost:5019/Account/Register
 
 Create the first admin user, then configure:
 
-1. A project
+1. A project with a Slack webhook URL
 2. An API key
-3. An event definition with a Slack webhook URL
+3. An event definition
 4. A Scriban template
 
 ## Plans

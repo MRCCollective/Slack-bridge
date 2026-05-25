@@ -19,6 +19,11 @@
         <label asp-for="Project.Description" class="form-label"></label>
         <textarea asp-for="Project.Description" class="form-control"></textarea>
     </div>
+    <div class="mb-3">
+        <label asp-for="Project.SlackWebhookUrl" class="form-label">Slack webhook URL</label>
+        <input asp-for="Project.SlackWebhookUrl" class="form-control" placeholder="https://hooks.slack.com/services/..." />
+        <span asp-validation-for="Project.SlackWebhookUrl" class="text-danger"></span>
+    </div>
     <button class="btn btn-primary" type="submit">Save</button>
     <a class="btn btn-link" asp-page="Index">Cancel</a>
 </form>

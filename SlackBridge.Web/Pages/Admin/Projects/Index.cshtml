@@ -11,7 +11,7 @@
 
 <table class="table table-striped align-middle">
     <thead>
-    <tr><th>Name</th><th>Description</th><th></th></tr>
+    <tr><th>Name</th><th>Description</th><th>Slack</th><th></th></tr>
     </thead>
     <tbody>
     @foreach (var item in Model.Projects)
@@ -19,6 +19,7 @@
         <tr>
             <td>@item.Name</td>
             <td>@item.Description</td>
+            <td>@(string.IsNullOrWhiteSpace(item.SlackWebhookUrl) ? "Missing" : "Configured")</td>
             <td class="text-end">
                 <a class="btn btn-sm btn-outline-secondary" asp-page="Edit" asp-route-id="@item.Id">Edit</a>
                 <a class="btn btn-sm btn-outline-danger" asp-page="Delete" asp-route-id="@item.Id">Delete</a>

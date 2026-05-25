@@ -18,19 +18,18 @@
         <li>Enable <strong>Incoming Webhooks</strong>.</li>
         <li>Create a webhook for the Slack channel that should receive messages.</li>
         <li>Copy the webhook URL. It should look like <code>https://hooks.slack.com/services/...</code>.</li>
-        <li>Store the webhook URL in Slack Bridge on the event definition.</li>
+        <li>Store the webhook URL in Slack Bridge on the project.</li>
     </ol>
 </div>
 
 <div class="surface-card p-4 mb-4">
     <h2 class="h4">2. Configure Slack Bridge</h2>
     <ol class="mb-0">
-        <li>Create a <strong>Project</strong> for the application that will send events.</li>
+        <li>Create a <strong>Project</strong> for the application that will send events, and paste the Slack webhook URL there.</li>
         <li>Create an <strong>API Key</strong> for that project and store it in the calling app's secret configuration.</li>
         <li>Create an <strong>Event Definition</strong> with a stable key such as <code>user_signup</code>.</li>
-        <li>Paste the Slack webhook URL into the event definition.</li>
         <li>Write a Scriban template using fields from the event payload.</li>
-        <li>Use <strong>Test send</strong> to confirm Slack delivery.</li>
+        <li>Use <strong>Send test</strong> to confirm Slack delivery.</li>
     </ol>
 </div>
 
@@ -108,7 +107,7 @@ Source: {{ source }}</code></pre>
         <li><code>401</code>: missing, inactive, or incorrect API key.</li>
         <li><code>404</code>: no active event definition matches the event key for that project.</li>
         <li><code>429</code>: current plan usage limit has been reached.</li>
-        <li><code>502</code>: Slack delivery failed. Check the event log result and webhook URL.</li>
+        <li><code>502</code>: Slack delivery failed. Check the event log result and the project's webhook URL.</li>
         <li>Use <strong>Logs</strong> to inspect payloads, rendered messages, Slack status codes, and retry state.</li>
     </ul>
 </div>

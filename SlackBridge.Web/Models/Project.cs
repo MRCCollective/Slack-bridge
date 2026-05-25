@@ -15,6 +15,9 @@ public sealed class Project
     [MaxLength(500)]
     public string? Description { get; set; }
 
+    [Required, Url, MaxLength(2048)]
+    public string SlackWebhookUrl { get; set; } = string.Empty;
+
     public DateTimeOffset CreatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
 
     public ICollection<ApiKey> ApiKeys { get; set; } = [];

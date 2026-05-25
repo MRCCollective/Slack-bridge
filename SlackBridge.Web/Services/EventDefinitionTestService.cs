@@ -21,14 +21,20 @@ public sealed class EventDefinitionTestService(
 {
     public async Task<EventDefinitionTestResult> SendAsync(EventDefinition definition, CancellationToken cancellationToken)
     {
-        var projectExists = await dbContext.Projects.AnyAsync(project =>
+        var project = await dbContext.Projects
+            .SingleOrDefaultAsync(project =>
             project.Id == definition.ProjectId &&
             project.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
             cancellationToken);
 
-        if (!projectExists)
+        if (project is null)
         {
             throw new InvalidOperationException("Choose a project before sending a test.");
+        }
+
+        if (string.IsNullOrWhiteSpace(project.SlackWebhookUrl))
+        {
+            throw new InvalidOperationException("Add a Slack webhook URL to the selected project before sending a test.");
         }
 
         var payloadJson = JsonSerializer.Serialize(new
@@ -45,12 +51,13 @@ public sealed class EventDefinitionTestService(
         {
             using var payload = JsonDocument.Parse(payloadJson);
             renderedMessage = await templateService.RenderAsync(definition.Template, payload.RootElement, cancellationToken);
-            var slackResult = await slackService.SendAsync(definition.SlackWebhookUrl, renderedMessage, cancellationToken);
+            var slackResult = await slackService.SendAsync(project.SlackWebhookUrl, renderedMessage, cancellationToken);
 
             var log = await eventLogService.WriteAsync(new EventLog
             {
                 CustomerInstanceId = customerInstanceContext.CustomerInstanceId,
                 ProjectId = definition.ProjectId,
+                EventDefinitionId = definition.Id == 0 ? null : definition.Id,
                 EventKey = definition.Key,
                 PayloadJson = payloadJson,
                 RenderedMessage = renderedMessage,
@@ -67,6 +74,7 @@ public sealed class EventDefinitionTestService(
             {
                 CustomerInstanceId = customerInstanceContext.CustomerInstanceId,
                 ProjectId = definition.ProjectId,
+                EventDefinitionId = definition.Id == 0 ? null : definition.Id,
                 EventKey = string.IsNullOrWhiteSpace(definition.Key) ? "test" : definition.Key,
                 PayloadJson = payloadJson,
                 RenderedMessage = renderedMessage,

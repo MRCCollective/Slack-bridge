@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +9,7 @@ namespace SlackBridge.Web.Pages.Admin.EventDefinitions;
 
 public sealed class IndexModel(
     SlackBridgeDbContext dbContext,
-    ITemplateService templateService,
-    ISlackService slackService,
-    IEventLogService eventLogService,
+    IEventDefinitionTestService eventDefinitionTestService,
     ICustomerInstanceContext customerInstanceContext) : PageModel
 {
     public IReadOnlyList<EventDefinition> EventDefinitions { get; private set; } = [];
@@ -35,49 +32,13 @@ public sealed class IndexModel(
             return NotFound();
         }
 
-        using var document = JsonDocument.Parse("""
-        {
-          "test": true,
-          "message": "Slack Bridge test",
-          "sent_at_utc": "2026-05-07T00:00:00Z"
-        }
-        """);
-
-        string? rendered = null;
         try
         {
-            rendered = await templateService.RenderAsync(definition.Template, document.RootElement, cancellationToken);
-            var result = await slackService.SendAsync(definition.SlackWebhookUrl, rendered, cancellationToken);
-            await eventLogService.WriteAsync(new EventLog
-            {
-                CustomerInstanceId = customerInstanceContext.CustomerInstanceId,
-                ProjectId = definition.ProjectId,
-                EventDefinitionId = definition.Id,
-                EventKey = definition.Key,
-                PayloadJson = document.RootElement.GetRawText(),
-                RenderedMessage = rendered,
-                Status = EventLogStatus.Succeeded,
-                ResultMessage = result.ResponseBody,
-                SlackStatusCode = (int)result.StatusCode
-            }, cancellationToken);
-
-            return RedirectToPage("Index", new { statusMessage = $"Test send for '{definition.Key}' succeeded." });
+            var result = await eventDefinitionTestService.SendAsync(definition, cancellationToken);
+            return RedirectToPage("Index", new { statusMessage = $"{result.Message} Log #{result.LogId}." });
         }
-        catch (Exception exception)
+        catch (InvalidOperationException exception)
         {
-            await eventLogService.WriteAsync(new EventLog
-            {
-                CustomerInstanceId = customerInstanceContext.CustomerInstanceId,
-                ProjectId = definition.ProjectId,
-                EventDefinitionId = definition.Id,
-                EventKey = definition.Key,
-                PayloadJson = document.RootElement.GetRawText(),
-                RenderedMessage = rendered,
-                Status = EventLogStatus.Failed,
-                ResultMessage = exception.Message,
-                SlackStatusCode = exception is SlackDeliveryException slackException ? (int)slackException.StatusCode : null
-            }, cancellationToken);
-
             return RedirectToPage("Index", new { statusMessage = $"Test send for '{definition.Key}' failed: {exception.Message}" });
         }
     }

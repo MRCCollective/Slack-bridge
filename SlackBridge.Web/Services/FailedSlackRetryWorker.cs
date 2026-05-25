@@ -38,11 +38,13 @@ public sealed class FailedSlackRetryWorker(
 
         var logs = await dbContext.EventLogs
             .Include(log => log.EventDefinition)
+            .Include(log => log.Project)
             .Where(log =>
                 log.Status == EventLogStatus.Failed &&
                 log.RetryState == RetryState.Pending &&
                 log.RenderedMessage != null &&
                 log.EventDefinition != null &&
+                log.Project != null &&
                 log.NextRetryAtUtc <= now)
             .OrderBy(log => log.CreatedAtUtc)
             .Take(10)
@@ -52,7 +54,7 @@ public sealed class FailedSlackRetryWorker(
         {
             try
             {
-                var result = await slackService.SendAsync(log.EventDefinition!.SlackWebhookUrl, log.RenderedMessage!, cancellationToken);
+                var result = await slackService.SendAsync(log.Project!.SlackWebhookUrl, log.RenderedMessage!, cancellationToken);
                 log.Status = EventLogStatus.Succeeded;
                 log.RetryState = RetryState.None;
                 log.ResultMessage = $"Retried successfully: {result.ResponseBody}";

@@ -15,9 +15,6 @@ public sealed class EventDefinition
     [Required, MaxLength(120)]
     public string Key { get; set; } = string.Empty;
 
-    [Required, Url, MaxLength(2048)]
-    public string SlackWebhookUrl { get; set; } = string.Empty;
-
     [Required]
     public string Template { get; set; } = string.Empty;
 
