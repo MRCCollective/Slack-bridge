@@ -88,7 +88,8 @@ app.UseRequestLocalization();
 app.UseAuthentication();
 app.UseAuthorization();
 
-RecurringJob.AddOrUpdate<EventLogCleanupJob>(
+var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+recurringJobManager.AddOrUpdate<EventLogCleanupJob>(
     "event-log-cleanup",
     job => job.DeleteOldLogsAsync(CancellationToken.None),
     Cron.Daily(2),
