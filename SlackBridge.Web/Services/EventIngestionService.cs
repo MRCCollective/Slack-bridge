@@ -52,7 +52,7 @@ public sealed class EventIngestionService(
         try
         {
             renderedMessage = await templateService.RenderAsync(definition.Template, request.Data, cancellationToken);
-            var slackResult = await slackService.SendAsync(definition.Project!.SlackWebhookUrl, renderedMessage, cancellationToken);
+            var slackResult = await slackService.SendAsync(definition.GetSlackWebhookUrl(), renderedMessage, cancellationToken);
 
             var successLog = await eventLogService.WriteAsync(new EventLog
             {

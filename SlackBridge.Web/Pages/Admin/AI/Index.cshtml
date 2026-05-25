@@ -43,7 +43,7 @@ Core event flow:
 2. Find active EventDefinition for the API key project and event key.
 3. Enforce usage limits with IUsageService.
 4. Render the Scriban template with ITemplateService.
-5. Send the rendered text through ISlackService using the project Slack webhook URL.
+5. Send the rendered text through ISlackService using the project Slack webhook URL, unless the event definition has its disabled-by-default custom webhook override enabled.
 6. Write EventLog for success or failure.
 7. Mark failed Slack sends for retry with FailedSlackRetryWorker.
 
@@ -83,7 +83,7 @@ Fix the integration issue described below.</code></pre>
                 <li>Confirm the API key is active and belongs to the expected project.</li>
                 <li>Confirm the event key exactly matches an active event definition.</li>
                 <li>Render the Scriban template with representative JSON.</li>
-                <li>Check the project Slack webhook URL and response status.</li>
+                <li>Check the project Slack webhook URL, any enabled event-level override, and response status.</li>
                 <li>Inspect <code>EventLogs</code> for result messages and retry state.</li>
                 <li>Check monthly usage limits if requests return <code>429</code>.</li>
             </ul>

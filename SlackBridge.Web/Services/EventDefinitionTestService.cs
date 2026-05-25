@@ -32,9 +32,12 @@ public sealed class EventDefinitionTestService(
             throw new InvalidOperationException("Choose a project before sending a test.");
         }
 
-        if (string.IsNullOrWhiteSpace(project.SlackWebhookUrl))
+        definition.Project = project;
+        var webhookUrl = definition.GetSlackWebhookUrl();
+
+        if (string.IsNullOrWhiteSpace(webhookUrl))
         {
-            throw new InvalidOperationException("Add a Slack webhook URL to the selected project before sending a test.");
+            throw new InvalidOperationException("Add a Slack webhook URL to the project, or enable a custom webhook URL for this event.");
         }
 
         var payloadJson = JsonSerializer.Serialize(new
@@ -51,7 +54,7 @@ public sealed class EventDefinitionTestService(
         {
             using var payload = JsonDocument.Parse(payloadJson);
             renderedMessage = await templateService.RenderAsync(definition.Template, payload.RootElement, cancellationToken);
-            var slackResult = await slackService.SendAsync(project.SlackWebhookUrl, renderedMessage, cancellationToken);
+            var slackResult = await slackService.SendAsync(webhookUrl, renderedMessage, cancellationToken);
 
             var log = await eventLogService.WriteAsync(new EventLog
             {

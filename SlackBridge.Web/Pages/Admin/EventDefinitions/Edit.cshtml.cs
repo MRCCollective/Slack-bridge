@@ -30,6 +30,8 @@ public sealed class EditModel(SlackBridgeDbContext dbContext, ICustomerInstanceC
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
+        ValidateWebhookOverride();
+
         if (!ModelState.IsValid)
         {
             await LoadProjectsAsync(cancellationToken);
@@ -39,6 +41,17 @@ public sealed class EditModel(SlackBridgeDbContext dbContext, ICustomerInstanceC
         dbContext.Attach(EventDefinition).State = EntityState.Modified;
         await dbContext.SaveChangesAsync(cancellationToken);
         return RedirectToPage("Index");
+    }
+
+    private void ValidateWebhookOverride()
+    {
+        if (EventDefinition.UseCustomSlackWebhook &&
+            string.IsNullOrWhiteSpace(EventDefinition.CustomSlackWebhookUrl))
+        {
+            ModelState.AddModelError(
+                "EventDefinition.CustomSlackWebhookUrl",
+                "Enter a custom Slack webhook URL or turn off the event-level override.");
+        }
     }
 
     private async Task LoadProjectsAsync(CancellationToken cancellationToken)

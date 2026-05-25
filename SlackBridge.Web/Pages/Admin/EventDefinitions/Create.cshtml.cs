@@ -31,6 +31,8 @@ public sealed class CreateModel(
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
+        ValidateWebhookOverride();
+
         if (string.Equals(SubmitAction, "Test", StringComparison.OrdinalIgnoreCase))
         {
             return await SendTestAsync(cancellationToken);
@@ -74,6 +76,17 @@ public sealed class CreateModel(
 
         await LoadProjectsAsync(cancellationToken);
         return Page();
+    }
+
+    private void ValidateWebhookOverride()
+    {
+        if (EventDefinition.UseCustomSlackWebhook &&
+            string.IsNullOrWhiteSpace(EventDefinition.CustomSlackWebhookUrl))
+        {
+            ModelState.AddModelError(
+                "EventDefinition.CustomSlackWebhookUrl",
+                "Enter a custom Slack webhook URL or turn off the event-level override.");
+        }
     }
 
     private async Task LoadProjectsAsync(CancellationToken cancellationToken)

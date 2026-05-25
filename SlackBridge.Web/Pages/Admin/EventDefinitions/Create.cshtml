@@ -30,6 +30,15 @@
         <span asp-validation-for="EventDefinition.Template" class="text-danger"></span>
     </div>
     <div class="form-check mb-3">
+        <input asp-for="EventDefinition.UseCustomSlackWebhook" class="form-check-input" />
+        <label asp-for="EventDefinition.UseCustomSlackWebhook" class="form-check-label">Use custom Slack webhook for this event</label>
+    </div>
+    <div class="mb-3">
+        <label asp-for="EventDefinition.CustomSlackWebhookUrl" class="form-label">Custom Slack webhook URL</label>
+        <input asp-for="EventDefinition.CustomSlackWebhookUrl" class="form-control" placeholder="https://hooks.slack.com/services/..." data-webhook-override-url />
+        <span asp-validation-for="EventDefinition.CustomSlackWebhookUrl" class="text-danger"></span>
+    </div>
+    <div class="form-check mb-3">
         <input asp-for="EventDefinition.IsActive" class="form-check-input" />
         <label asp-for="EventDefinition.IsActive" class="form-check-label"></label>
     </div>
@@ -38,4 +47,17 @@
     <a class="btn btn-link" asp-page="Index">Cancel</a>
 </form>
 
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const toggle = document.querySelector("#EventDefinition_UseCustomSlackWebhook");
+            const input = document.querySelector("[data-webhook-override-url]");
+            const sync = () => {
+                input.disabled = !toggle.checked;
+            };
+            toggle.addEventListener("change", sync);
+            sync();
+        })();
+    </script>
+}

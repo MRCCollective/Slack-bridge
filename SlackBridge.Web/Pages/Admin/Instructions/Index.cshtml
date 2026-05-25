@@ -29,6 +29,7 @@
         <li>Create an <strong>API Key</strong> for that project and store it in the calling app's secret configuration.</li>
         <li>Create an <strong>Event Definition</strong> with a stable key such as <code>user_signup</code>.</li>
         <li>Write a Scriban template using fields from the event payload.</li>
+        <li>Leave the event-level custom webhook off unless this event should go to a different Slack destination.</li>
         <li>Use <strong>Send test</strong> to confirm Slack delivery.</li>
     </ol>
 </div>
@@ -107,7 +108,7 @@ Source: {{ source }}</code></pre>
         <li><code>401</code>: missing, inactive, or incorrect API key.</li>
         <li><code>404</code>: no active event definition matches the event key for that project.</li>
         <li><code>429</code>: current plan usage limit has been reached.</li>
-        <li><code>502</code>: Slack delivery failed. Check the event log result and the project's webhook URL.</li>
+        <li><code>502</code>: Slack delivery failed. Check the event log result, the project's webhook URL, and any enabled event-level override.</li>
         <li>Use <strong>Logs</strong> to inspect payloads, rendered messages, Slack status codes, and retry state.</li>
     </ul>
 </div>
