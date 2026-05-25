@@ -1,18 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using SlackBridge.Web.Data;
 using SlackBridge.Web.Models;
+using SlackBridge.Web.Services;
 
 namespace SlackBridge.Web.Pages.Admin.ApiKeys;
 
-public sealed class DeleteModel(SlackBridgeDbContext dbContext) : PageModel
+public sealed class DeleteModel(
+    SlackBridgeDbContext dbContext,
+    ICustomerInstanceContext customerInstanceContext) : PageModel
 {
     [BindProperty]
     public ApiKey ApiKey { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync(int id, CancellationToken cancellationToken)
     {
-        var apiKey = await dbContext.ApiKeys.FindAsync([id], cancellationToken);
+        var apiKey = await dbContext.ApiKeys.SingleOrDefaultAsync(
+            apiKey => apiKey.Id == id && apiKey.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
         if (apiKey is null)
         {
             return NotFound();
@@ -24,7 +30,9 @@ public sealed class DeleteModel(SlackBridgeDbContext dbContext) : PageModel
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
-        var apiKey = await dbContext.ApiKeys.FindAsync([ApiKey.Id], cancellationToken);
+        var apiKey = await dbContext.ApiKeys.SingleOrDefaultAsync(
+            apiKey => apiKey.Id == ApiKey.Id && apiKey.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
         var projectId = apiKey?.ProjectId;
         if (apiKey is not null)
         {

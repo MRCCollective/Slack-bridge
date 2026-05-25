@@ -1,18 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using SlackBridge.Web.Data;
 using SlackBridge.Web.Models;
+using SlackBridge.Web.Services;
 
 namespace SlackBridge.Web.Pages.Admin.EventDefinitions;
 
-public sealed class DeleteModel(SlackBridgeDbContext dbContext) : PageModel
+public sealed class DeleteModel(
+    SlackBridgeDbContext dbContext,
+    ICustomerInstanceContext customerInstanceContext) : PageModel
 {
     [BindProperty]
     public EventDefinition EventDefinition { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync(int id, CancellationToken cancellationToken)
     {
-        var definition = await dbContext.EventDefinitions.FindAsync([id], cancellationToken);
+        var definition = await dbContext.EventDefinitions.SingleOrDefaultAsync(
+            definition => definition.Id == id && definition.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
         if (definition is null)
         {
             return NotFound();
@@ -24,7 +30,10 @@ public sealed class DeleteModel(SlackBridgeDbContext dbContext) : PageModel
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
-        var definition = await dbContext.EventDefinitions.FindAsync([EventDefinition.Id], cancellationToken);
+        var definition = await dbContext.EventDefinitions.SingleOrDefaultAsync(
+            definition => definition.Id == EventDefinition.Id &&
+                definition.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
         var projectId = definition?.ProjectId;
         if (definition is not null)
         {

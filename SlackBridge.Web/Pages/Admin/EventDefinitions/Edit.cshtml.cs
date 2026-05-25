@@ -17,7 +17,9 @@ public sealed class EditModel(SlackBridgeDbContext dbContext, ICustomerInstanceC
 
     public async Task<IActionResult> OnGetAsync(int id, CancellationToken cancellationToken)
     {
-        var definition = await dbContext.EventDefinitions.FindAsync([id], cancellationToken);
+        var definition = await dbContext.EventDefinitions.SingleOrDefaultAsync(
+            definition => definition.Id == id && definition.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
         if (definition is null)
         {
             return NotFound();
@@ -38,7 +40,29 @@ public sealed class EditModel(SlackBridgeDbContext dbContext, ICustomerInstanceC
             return Page();
         }
 
-        dbContext.Attach(EventDefinition).State = EntityState.Modified;
+        var projectExists = await dbContext.Projects.AnyAsync(
+            project => project.Id == EventDefinition.ProjectId && project.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
+        if (!projectExists)
+        {
+            return NotFound();
+        }
+
+        var definition = await dbContext.EventDefinitions.SingleOrDefaultAsync(
+            definition => definition.Id == EventDefinition.Id &&
+                definition.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
+        if (definition is null)
+        {
+            return NotFound();
+        }
+
+        definition.ProjectId = EventDefinition.ProjectId;
+        definition.Key = EventDefinition.Key;
+        definition.Template = EventDefinition.Template;
+        definition.UseCustomSlackWebhook = EventDefinition.UseCustomSlackWebhook;
+        definition.CustomSlackWebhookUrl = EventDefinition.CustomSlackWebhookUrl;
+        definition.IsActive = EventDefinition.IsActive;
         await dbContext.SaveChangesAsync(cancellationToken);
         return RedirectToPage("/Admin/Projects/Details", new { id = EventDefinition.ProjectId });
     }

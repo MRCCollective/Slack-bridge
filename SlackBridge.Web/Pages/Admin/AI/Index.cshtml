@@ -7,12 +7,78 @@
 <div class="d-flex justify-content-between align-items-start mb-4">
     <div>
         <h1 class="mb-1">AI</h1>
-        <p class="text-muted mb-0">Use this page as context when asking an AI assistant to fix or add an integration.</p>
+        <p class="text-muted mb-0">Copy these instructions into a coding agent to add Slack Bridge to another app quickly.</p>
     </div>
 </div>
 
 <div class="surface-card p-4 mb-4">
-    <h2 class="h4">Project brief</h2>
+    <h2 class="h4">Agent prompt</h2>
+    <pre><code>You are adding Slack Bridge event notifications to this application.
+
+Slack Bridge is already hosted separately. Do not build Slack delivery in this app.
+
+Configuration to use:
+- SlackBridge:BaseUrl = https://your-slack-bridge.example.com
+- SlackBridge:ApiKey = sb_your_project_key
+
+HTTP contract:
+- Method: POST
+- Path: /api/events
+- Header: x-api-key: {SlackBridge:ApiKey}
+- Body:
+  {
+    "key": "stable_event_key",
+    "data": {
+      "field": "value"
+    }
+  }
+
+Implementation requirements:
+- Create a small typed client/service named SlackBridgeClient.
+- Register it with dependency injection and HttpClient.
+- Keep the API key in secret configuration.
+- Use stable event keys such as user_signup, payment_failed, build_failed, or job_completed.
+- Send plain JSON data. Slack Bridge handles Slack formatting through templates.
+- Do not store or log the full API key.
+- Treat non-success responses as failures and surface useful diagnostics.
+- Add one event call at the feature boundary I describe below.
+- Add a focused test or smoke check if this codebase already has tests for HTTP clients.
+
+Task:
+Implement the Slack Bridge event described here: [describe the event, where it happens, and the payload fields].</code></pre>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">Reference client</h2>
+    <pre><code>public sealed class SlackBridgeClient(HttpClient httpClient, IConfiguration configuration)
+{
+    public async Task SendAsync(string key, object data, CancellationToken cancellationToken = default)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/events");
+        request.Headers.Add("x-api-key", configuration["SlackBridge:ApiKey"]);
+        request.Content = JsonContent.Create(new { key, data });
+
+        using var response = await httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
+}</code></pre>
+    <pre class="mb-0"><code>builder.Services.AddHttpClient&lt;SlackBridgeClient&gt;(client =&gt;
+{
+    client.BaseAddress = new Uri(builder.Configuration["SlackBridge:BaseUrl"]!);
+});</code></pre>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">Slack setup links</h2>
+    <ul class="mb-0">
+        <li><a href="https://api.slack.com/apps?new_app=1" target="_blank" rel="noopener">Create a Slack app</a></li>
+        <li><a href="https://api.slack.com/apps" target="_blank" rel="noopener">Manage Slack apps</a></li>
+        <li><a href="https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks/" target="_blank" rel="noopener">Slack Incoming Webhooks guide</a></li>
+    </ul>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">What Slack Bridge does</h2>
     <p>
         Slack Bridge is a single-tenant ASP.NET Core 9 application that receives event payloads from internal apps,
         renders Scriban templates, and sends messages to project-level Slack Incoming Webhooks.
@@ -24,7 +90,7 @@
 </div>
 
 <div class="surface-card p-4 mb-4">
-    <h2 class="h4">Copy this prompt</h2>
+    <h2 class="h4">Slack Bridge repo maintenance prompt</h2>
     <pre><code>You are working on Slack Bridge.
 
 Goal: fix or add an integration without changing unrelated behavior.
@@ -35,8 +101,9 @@ Architecture:
 - Web API endpoint: POST /api/events.
 - EF Core SQL Server DbContext: SlackBridgeDbContext.
 - Identity user model: ApplicationUser.
-- Single customer instance for now, scoped by CustomerInstanceId = 1.
-- Future multi-tenancy is expected, so keep customer-scoped data explicit.
+- Customer-scoped data uses CustomerInstanceId.
+- User-facing admin pages use the signed-in user's tenant.
+- API event ingestion uses the tenant from the API key.
 
 Core event flow:
 1. Validate x-api-key using IApiKeyValidator.

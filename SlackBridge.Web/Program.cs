@@ -13,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AuthorizeFolder("/Admin");
+    options.Conventions.AllowAnonymousToPage("/Admin/Instructions/Index");
+    options.Conventions.AllowAnonymousToPage("/Admin/AI/Index");
 });
 builder.Services.AddControllers();
 builder.Services.AddDataProtection();
@@ -40,6 +42,7 @@ builder.Services.AddDbContext<SlackBridgeDbContext>(options =>
         options.UseSqlServer(connectionString);
     }
 });
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHangfire(configuration => configuration.UseMemoryStorage());
 builder.Services.AddHangfireServer();
 builder.Services
@@ -51,6 +54,7 @@ builder.Services
     })
     .AddEntityFrameworkStores<SlackBridgeDbContext>()
     .AddDefaultTokenProviders();
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationUserClaimsPrincipalFactory>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";

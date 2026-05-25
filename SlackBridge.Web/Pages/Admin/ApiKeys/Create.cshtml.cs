@@ -50,6 +50,14 @@ public sealed class CreateModel(
             return Page();
         }
 
+        var projectExists = await dbContext.Projects.AnyAsync(
+            project => project.Id == Input.ProjectId && project.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
+        if (!projectExists)
+        {
+            return NotFound();
+        }
+
         var rawKey = apiKeyGenerator.Generate();
         dbContext.ApiKeys.Add(new ApiKey
         {

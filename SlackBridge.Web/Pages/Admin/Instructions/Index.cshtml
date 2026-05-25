@@ -14,12 +14,16 @@
 <div class="surface-card p-4 mb-4">
     <h2 class="h4">1. Create a Slack Incoming Webhook</h2>
     <ol class="mb-0">
-        <li>Open Slack API app management and create or select an app for your workspace.</li>
+        <li>Open <a href="https://api.slack.com/apps?new_app=1" target="_blank" rel="noopener">Create a Slack app</a> or <a href="https://api.slack.com/apps" target="_blank" rel="noopener">Slack app management</a> and create or select an app for your workspace.</li>
         <li>Enable <strong>Incoming Webhooks</strong>.</li>
         <li>Create a webhook for the Slack channel that should receive messages.</li>
         <li>Copy the webhook URL. It should look like <code>https://hooks.slack.com/services/...</code>.</li>
         <li>Store the webhook URL in Slack Bridge on the project.</li>
     </ol>
+    <p class="text-muted mt-3 mb-0">
+        Slack's official guide is here:
+        <a href="https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks/" target="_blank" rel="noopener">Sending messages using incoming webhooks</a>.
+    </p>
 </div>
 
 <div class="surface-card p-4 mb-4">
@@ -52,7 +56,25 @@ Source: {{ source }}</code></pre>
 </div>
 
 <div class="surface-card p-4 mb-4">
-    <h2 class="h4">4. Send an event from .NET</h2>
+    <h2 class="h4">4. Give this to your coding agent</h2>
+    <pre><code>Implement Slack Bridge event delivery in this app.
+
+Use these configuration values:
+- SlackBridge:BaseUrl = https://your-slack-bridge.example.com
+- SlackBridge:ApiKey = sb_your_project_key
+
+Requirements:
+- Create a small typed client named SlackBridgeClient.
+- Send POST /api/events with the x-api-key header.
+- Request body must be { "key": "...", "data": { ... } }.
+- Keep the API key in secret configuration only.
+- Do not call Slack directly from this app.
+- Add a clear call site for the event I describe below.
+- Log or surface non-success responses without swallowing failures.</code></pre>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">5. Send an event from .NET</h2>
     <pre><code>public sealed class SlackBridgeClient(HttpClient httpClient, IConfiguration configuration)
 {
     public async Task SendAsync(string key, object data, CancellationToken cancellationToken = default)
@@ -84,7 +106,7 @@ Source: {{ source }}</code></pre>
 </div>
 
 <div class="surface-card p-4 mb-4">
-    <h2 class="h4">5. Send an event from JavaScript</h2>
+    <h2 class="h4">6. Send an event from JavaScript</h2>
     <pre class="mb-0"><code>await fetch("https://your-slack-bridge.example.com/api/events", {
   method: "POST",
   headers: {

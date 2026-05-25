@@ -4,22 +4,95 @@
     ViewData["Title"] = "Slack Bridge";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="mb-2">Slack Bridge</h1>
-        <p class="text-muted mb-0">Send events to one API. Render templates. Deliver Slack messages.</p>
-    </div>
-    <a class="btn btn-primary" asp-page="/Admin/EventDefinitions/Index">Send event</a>
-</div>
-
-<pre class="bg-light border rounded p-3"><code>POST /api/events
-x-api-key: sb_...
+<section class="commercial-hero">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+            <p class="eyebrow">Event alerts for product teams</p>
+            <h1>Turn app events into clean Slack notifications.</h1>
+            <p class="hero-copy">
+                Slack Bridge gives your systems one stable API for operational alerts,
+                customer events, build failures, billing signals, and internal workflows.
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-primary btn-lg" asp-page="/Account/Register">Create free account</a>
+                <a class="btn btn-outline-light btn-lg" asp-page="/Account/Login">Login</a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="hero-terminal">
+                <div class="terminal-bar">
+                    <span></span><span></span><span></span>
+                </div>
+                <pre class="mb-0"><code>POST /api/events
+x-api-key: sb_live_...
 
 {
-  "key": "build-failed",
+  "key": "payment_failed",
   "data": {
-    "repository": "checkout",
-    "branch": "main",
-    "url": "https://example.test/builds/42"
+    "customer": "Acme AB",
+    "plan": "Scale",
+    "owner": "Finance"
   }
 }</code></pre>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="commercial-band">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="value-block">
+                <div class="value-kicker">Template once</div>
+                <h2>Reusable Slack messages</h2>
+                <p>Use Scriban templates so every service can send structured event data without formatting Slack text itself.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="value-block">
+                <div class="value-kicker">One project key</div>
+                <h2>Simple app integration</h2>
+                <p>Create projects, issue hashed API keys, and send events from .NET, JavaScript, background jobs, or automation tools.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="value-block">
+                <div class="value-kicker">Built for ops</div>
+                <h2>Logs, retries, and limits</h2>
+                <p>Track every delivery attempt, retry failed Slack sends, and keep usage predictable with plan limits.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="commercial-workflow">
+    <div>
+        <p class="eyebrow">How it works</p>
+        <h2>From event to Slack in minutes</h2>
+    </div>
+    <div class="workflow-grid">
+        <div>
+            <span>1</span>
+            <h3>Create a project</h3>
+            <p>Add the Slack incoming webhook for the channel that should receive the message.</p>
+        </div>
+        <div>
+            <span>2</span>
+            <h3>Define events</h3>
+            <p>Name each event and write a template using fields from the payload your app already has.</p>
+        </div>
+        <div>
+            <span>3</span>
+            <h3>Send JSON</h3>
+            <p>Post the event key and data to Slack Bridge. Delivery logs show exactly what happened.</p>
+        </div>
+    </div>
+</section>
+
+<div class="final-cta">
+    <div>
+        <h2>Start on the free plan.</h2>
+        <p class="text-muted mb-0">Create your workspace, add Slack, and send your first production-ready event.</p>
+    </div>
+    <a class="btn btn-primary" asp-page="/Account/Register">Create account</a>
+</div>

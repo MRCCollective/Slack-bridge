@@ -17,7 +17,9 @@ public sealed class EditModel(SlackBridgeDbContext dbContext, ICustomerInstanceC
 
     public async Task<IActionResult> OnGetAsync(int id, CancellationToken cancellationToken)
     {
-        var apiKey = await dbContext.ApiKeys.FindAsync([id], cancellationToken);
+        var apiKey = await dbContext.ApiKeys.SingleOrDefaultAsync(
+            apiKey => apiKey.Id == id && apiKey.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
         if (apiKey is null)
         {
             return NotFound();
@@ -36,7 +38,25 @@ public sealed class EditModel(SlackBridgeDbContext dbContext, ICustomerInstanceC
             return Page();
         }
 
-        dbContext.Attach(ApiKey).State = EntityState.Modified;
+        var projectExists = await dbContext.Projects.AnyAsync(
+            project => project.Id == ApiKey.ProjectId && project.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
+        if (!projectExists)
+        {
+            return NotFound();
+        }
+
+        var apiKey = await dbContext.ApiKeys.SingleOrDefaultAsync(
+            apiKey => apiKey.Id == ApiKey.Id && apiKey.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
+        if (apiKey is null)
+        {
+            return NotFound();
+        }
+
+        apiKey.ProjectId = ApiKey.ProjectId;
+        apiKey.Name = ApiKey.Name;
+        apiKey.IsActive = ApiKey.IsActive;
         await dbContext.SaveChangesAsync(cancellationToken);
         return RedirectToPage("/Admin/Projects/Details", new { id = ApiKey.ProjectId });
     }

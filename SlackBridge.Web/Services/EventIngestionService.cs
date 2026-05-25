@@ -16,12 +16,11 @@ public sealed class EventIngestionService(
     ITemplateService templateService,
     ISlackService slackService,
     IEventLogService eventLogService,
-    IUsageService usageService,
-    ICustomerInstanceContext customerInstanceContext) : IEventIngestionService
+    IUsageService usageService) : IEventIngestionService
 {
     public async Task<EventResponse> HandleAsync(ApiKey apiKey, EventRequest request, CancellationToken cancellationToken)
     {
-        await usageService.EnsureEventLimitAsync(cancellationToken);
+        await usageService.EnsureEventLimitAsync(apiKey.CustomerInstanceId, cancellationToken);
 
         var definition = await dbContext.EventDefinitions
             .Include(definition => definition.Project)
@@ -74,7 +73,7 @@ public sealed class EventIngestionService(
         {
             var failedLog = await eventLogService.WriteAsync(new EventLog
             {
-                CustomerInstanceId = customerInstanceContext.CustomerInstanceId,
+                CustomerInstanceId = apiKey.CustomerInstanceId,
                 ProjectId = apiKey.ProjectId,
                 EventDefinitionId = definition.Id,
                 EventKey = request.Key,

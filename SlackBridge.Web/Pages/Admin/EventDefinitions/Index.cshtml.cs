@@ -25,7 +25,10 @@ public sealed class IndexModel(
     {
         var definition = await dbContext.EventDefinitions
             .Include(eventDefinition => eventDefinition.Project)
-            .SingleOrDefaultAsync(eventDefinition => eventDefinition.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(eventDefinition =>
+                eventDefinition.Id == id &&
+                eventDefinition.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+                cancellationToken);
 
         if (definition is null)
         {

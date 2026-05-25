@@ -52,6 +52,15 @@ public sealed class CreateModel(
             return Page();
         }
 
+        var projectExists = await dbContext.Projects.AnyAsync(
+            project => project.Id == EventDefinition.ProjectId &&
+                project.CustomerInstanceId == customerInstanceContext.CustomerInstanceId,
+            cancellationToken);
+        if (!projectExists)
+        {
+            return NotFound();
+        }
+
         EventDefinition.CustomerInstanceId = customerInstanceContext.CustomerInstanceId;
         dbContext.EventDefinitions.Add(EventDefinition);
         await dbContext.SaveChangesAsync(cancellationToken);

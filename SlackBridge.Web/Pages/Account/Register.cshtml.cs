@@ -12,41 +12,43 @@ namespace SlackBridge.Web.Pages.Account;
 public sealed class RegisterModel(
     SlackBridgeDbContext dbContext,
     UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager,
-    ICustomerInstanceContext customerInstanceContext) : PageModel
+    SignInManager<ApplicationUser> signInManager) : PageModel
 {
     [BindProperty]
     public RegisterInput Input { get; set; } = new();
 
-    public bool SetupComplete { get; private set; }
-
-    public async Task OnGetAsync(CancellationToken cancellationToken)
+    public void OnGet()
     {
-        SetupComplete = await dbContext.Users.AnyAsync(cancellationToken);
     }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
-        SetupComplete = await dbContext.Users.AnyAsync(cancellationToken);
-        if (SetupComplete)
-        {
-            return Page();
-        }
-
         if (!ModelState.IsValid)
         {
             return Page();
         }
 
-        var instance = await customerInstanceContext.GetAsync(cancellationToken);
-        instance.CompanyName = Input.CompanyName;
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+        var instance = new CustomerInstance
+        {
+            CompanyName = Input.CompanyName,
+            Subscription = new Subscription
+            {
+                Plan = PlanType.Free,
+                Status = "active"
+            }
+        };
+
+        dbContext.CustomerInstances.Add(instance);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         var user = new ApplicationUser
         {
             UserName = Input.Email,
             Email = Input.Email,
             EmailConfirmed = true,
-            CustomerInstanceId = customerInstanceContext.CustomerInstanceId
+            CustomerInstanceId = instance.Id
         };
 
         var result = await userManager.CreateAsync(user, Input.Password);
@@ -60,10 +62,20 @@ public sealed class RegisterModel(
             return Page();
         }
 
-        await userManager.AddToRoleAsync(user, ApplicationRoles.Admin);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        var roleResult = await userManager.AddToRoleAsync(user, ApplicationRoles.Admin);
+        if (!roleResult.Succeeded)
+        {
+            foreach (var error in roleResult.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return Page();
+        }
+
+        await transaction.CommitAsync(cancellationToken);
         await signInManager.SignInAsync(user, isPersistent: false);
-        return RedirectToPage("/Admin/Usage/Index");
+        return RedirectToPage("/Admin/Projects/Index");
     }
 
     public sealed class RegisterInput
