@@ -38,8 +38,8 @@
         <input asp-for="EventDefinition.IsActive" class="form-check-input" />
         <label asp-for="EventDefinition.IsActive" class="form-check-label"></label>
     </div>
-    <button class="btn btn-primary" type="submit">Create</button>
-    <button class="btn btn-outline-secondary" type="submit" asp-page-handler="Test">Send test</button>
+    <button class="btn btn-primary" type="submit" name="SubmitAction" value="Create">Create</button>
+    <button class="btn btn-outline-secondary" type="submit" name="SubmitAction" value="Test">Send test</button>
     <a class="btn btn-link" asp-page="Index">Cancel</a>
 </form>
 

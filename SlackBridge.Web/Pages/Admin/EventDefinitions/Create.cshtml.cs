@@ -24,10 +24,18 @@ public sealed class CreateModel(
     public string? StatusMessage { get; private set; }
     public bool StatusSucceeded { get; private set; }
 
+    [BindProperty]
+    public string SubmitAction { get; set; } = "Create";
+
     public async Task OnGetAsync(CancellationToken cancellationToken) => await LoadProjectsAsync(cancellationToken);
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
+        if (string.Equals(SubmitAction, "Test", StringComparison.OrdinalIgnoreCase))
+        {
+            return await SendTestAsync(cancellationToken);
+        }
+
         if (!ModelState.IsValid)
         {
             await LoadProjectsAsync(cancellationToken);
@@ -40,7 +48,7 @@ public sealed class CreateModel(
         return RedirectToPage("Index");
     }
 
-    public async Task<IActionResult> OnPostTestAsync(CancellationToken cancellationToken)
+    private async Task<IActionResult> SendTestAsync(CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {
