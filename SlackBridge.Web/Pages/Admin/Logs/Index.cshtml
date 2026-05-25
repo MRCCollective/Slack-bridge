@@ -7,7 +7,7 @@
 <div class="d-flex justify-content-between align-items-start mb-4">
     <div>
         <h1 class="mb-1">Logs</h1>
-        <p class="text-muted mb-0">Recent event deliveries and failures.</p>
+        <p class="text-muted mb-0">Recent event deliveries and failures. Times use Swedish local time. Logs older than 3 months are deleted nightly.</p>
     </div>
 </div>
 
@@ -19,7 +19,7 @@
     @foreach (var log in Model.Logs)
     {
         <tr>
-            <td>@log.CreatedAtUtc</td>
+            <td>@log.Created</td>
             <td><code>@log.EventKey</code></td>
             <td>@log.Status</td>
             <td>@log.SlackStatusCode</td>

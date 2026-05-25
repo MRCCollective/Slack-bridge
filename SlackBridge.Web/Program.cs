@@ -1,4 +1,8 @@
+using System.Globalization;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using SlackBridge.Web.Data;
 using SlackBridge.Web.Models;
@@ -12,6 +16,13 @@ builder.Services.AddRazorPages(options =>
 });
 builder.Services.AddControllers();
 builder.Services.AddDataProtection();
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var culture = new CultureInfo("sv-SE");
+    options.DefaultRequestCulture = new RequestCulture(culture);
+    options.SupportedCultures = [culture];
+    options.SupportedUICultures = [culture];
+});
 builder.Services.AddDbContext<SlackBridgeDbContext>(options =>
 {
     var provider = builder.Configuration["Database:Provider"];
@@ -29,6 +40,8 @@ builder.Services.AddDbContext<SlackBridgeDbContext>(options =>
         options.UseSqlServer(connectionString);
     }
 });
+builder.Services.AddHangfire(configuration => configuration.UseMemoryStorage());
+builder.Services.AddHangfireServer();
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
@@ -56,6 +69,8 @@ builder.Services.AddScoped<IEventDefinitionTestService, EventDefinitionTestServi
 builder.Services.AddScoped<IPlanLimitService, PlanLimitService>();
 builder.Services.AddScoped<IUsageService, UsageService>();
 builder.Services.AddScoped<IBillingService, BillingService>();
+builder.Services.AddSingleton<ILocalClock, LocalClock>();
+builder.Services.AddScoped<EventLogCleanupJob>();
 builder.Services.AddHostedService<FailedSlackRetryWorker>();
 
 var app = builder.Build();
@@ -68,9 +83,16 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseRequestLocalization();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+RecurringJob.AddOrUpdate<EventLogCleanupJob>(
+    "event-log-cleanup",
+    job => job.DeleteOldLogsAsync(CancellationToken.None),
+    Cron.Daily(2),
+    new RecurringJobOptions { TimeZone = LocalClock.SwedishTimeZone });
 
 app.MapStaticAssets();
 app.MapControllers();
