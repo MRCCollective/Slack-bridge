@@ -52,6 +52,7 @@ builder.Services.AddScoped<IApiKeyValidator, ApiKeyValidator>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IEventLogService, EventLogService>();
 builder.Services.AddScoped<IEventIngestionService, EventIngestionService>();
+builder.Services.AddScoped<IEventDefinitionTestService, EventDefinitionTestService>();
 builder.Services.AddScoped<IPlanLimitService, PlanLimitService>();
 builder.Services.AddScoped<IUsageService, UsageService>();
 builder.Services.AddScoped<IBillingService, BillingService>();

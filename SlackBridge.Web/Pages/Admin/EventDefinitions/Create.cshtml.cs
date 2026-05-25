@@ -8,7 +8,10 @@ using SlackBridge.Web.Services;
 
 namespace SlackBridge.Web.Pages.Admin.EventDefinitions;
 
-public sealed class CreateModel(SlackBridgeDbContext dbContext, ICustomerInstanceContext customerInstanceContext) : PageModel
+public sealed class CreateModel(
+    SlackBridgeDbContext dbContext,
+    ICustomerInstanceContext customerInstanceContext,
+    IEventDefinitionTestService eventDefinitionTestService) : PageModel
 {
     [BindProperty]
     public EventDefinition EventDefinition { get; set; } = new()
@@ -18,6 +21,8 @@ public sealed class CreateModel(SlackBridgeDbContext dbContext, ICustomerInstanc
     };
 
     public SelectList ProjectOptions { get; private set; } = new(Array.Empty<object>());
+    public string? StatusMessage { get; private set; }
+    public bool StatusSucceeded { get; private set; }
 
     public async Task OnGetAsync(CancellationToken cancellationToken) => await LoadProjectsAsync(cancellationToken);
 
@@ -33,6 +38,34 @@ public sealed class CreateModel(SlackBridgeDbContext dbContext, ICustomerInstanc
         dbContext.EventDefinitions.Add(EventDefinition);
         await dbContext.SaveChangesAsync(cancellationToken);
         return RedirectToPage("Index");
+    }
+
+    public async Task<IActionResult> OnPostTestAsync(CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            await LoadProjectsAsync(cancellationToken);
+            return Page();
+        }
+
+        EventDefinition.CustomerInstanceId = customerInstanceContext.CustomerInstanceId;
+        EventDefinitionTestResult result;
+        try
+        {
+            result = await eventDefinitionTestService.SendAsync(EventDefinition, cancellationToken);
+        }
+        catch (InvalidOperationException exception)
+        {
+            ModelState.AddModelError(string.Empty, exception.Message);
+            await LoadProjectsAsync(cancellationToken);
+            return Page();
+        }
+
+        StatusMessage = $"{result.Message} Log #{result.LogId}.";
+        StatusSucceeded = result.Succeeded;
+
+        await LoadProjectsAsync(cancellationToken);
+        return Page();
     }
 
     private async Task LoadProjectsAsync(CancellationToken cancellationToken)
