@@ -44,7 +44,14 @@
     </div>
     <button class="btn btn-primary" type="submit" name="SubmitAction" value="Create">Create</button>
     <button class="btn btn-outline-secondary" type="submit" name="SubmitAction" value="Test">Send test</button>
-    <a class="btn btn-link" asp-page="Index">Cancel</a>
+    @if (Model.EventDefinition.ProjectId > 0)
+    {
+        <a class="btn btn-link" asp-page="/Admin/Projects/Details" asp-route-id="@Model.EventDefinition.ProjectId">Cancel</a>
+    }
+    else
+    {
+        <a class="btn btn-link" asp-page="/Admin/Projects/Index">Cancel</a>
+    }
 </form>
 
 @section Scripts {

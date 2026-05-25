@@ -21,7 +21,15 @@ public sealed class CreateModel(
 
     public SelectList ProjectOptions { get; private set; } = new(Array.Empty<object>());
 
-    public async Task OnGetAsync(CancellationToken cancellationToken) => await LoadProjectsAsync(cancellationToken);
+    public async Task OnGetAsync(int? projectId, CancellationToken cancellationToken)
+    {
+        if (projectId.HasValue)
+        {
+            Input.ProjectId = projectId.Value;
+        }
+
+        await LoadProjectsAsync(cancellationToken);
+    }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
@@ -54,7 +62,7 @@ public sealed class CreateModel(
         });
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        return RedirectToPage("Index", new { createdKey = rawKey });
+        return RedirectToPage("/Admin/Projects/Details", new { id = Input.ProjectId, createdKey = rawKey });
     }
 
     private async Task LoadProjectsAsync(CancellationToken cancellationToken)
@@ -63,7 +71,7 @@ public sealed class CreateModel(
             .Where(project => project.CustomerInstanceId == customerInstanceContext.CustomerInstanceId)
             .OrderBy(project => project.Name)
             .ToListAsync(cancellationToken);
-        ProjectOptions = new SelectList(projects, "Id", "Name");
+        ProjectOptions = new SelectList(projects, "Id", "Name", Input.ProjectId);
     }
 
     public sealed class ApiKeyInput

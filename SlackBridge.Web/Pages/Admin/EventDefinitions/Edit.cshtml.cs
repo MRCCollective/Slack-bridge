@@ -40,7 +40,7 @@ public sealed class EditModel(SlackBridgeDbContext dbContext, ICustomerInstanceC
 
         dbContext.Attach(EventDefinition).State = EntityState.Modified;
         await dbContext.SaveChangesAsync(cancellationToken);
-        return RedirectToPage("Index");
+        return RedirectToPage("/Admin/Projects/Details", new { id = EventDefinition.ProjectId });
     }
 
     private void ValidateWebhookOverride()

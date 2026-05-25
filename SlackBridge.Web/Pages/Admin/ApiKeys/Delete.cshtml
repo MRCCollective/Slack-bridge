@@ -9,5 +9,5 @@
 <form method="post">
     <input type="hidden" asp-for="ApiKey.Id" />
     <button class="btn btn-danger" type="submit">Delete</button>
-    <a class="btn btn-link" asp-page="Index">Cancel</a>
+    <a class="btn btn-link" asp-page="/Admin/Projects/Details" asp-route-id="@Model.ApiKey.ProjectId">Cancel</a>
 </form>

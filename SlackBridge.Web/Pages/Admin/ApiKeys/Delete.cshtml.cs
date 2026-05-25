@@ -25,12 +25,15 @@ public sealed class DeleteModel(SlackBridgeDbContext dbContext) : PageModel
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
         var apiKey = await dbContext.ApiKeys.FindAsync([ApiKey.Id], cancellationToken);
+        var projectId = apiKey?.ProjectId;
         if (apiKey is not null)
         {
             dbContext.ApiKeys.Remove(apiKey);
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        return RedirectToPage("Index");
+        return projectId.HasValue
+            ? RedirectToPage("/Admin/Projects/Details", new { id = projectId.Value })
+            : RedirectToPage("/Admin/Projects/Index");
     }
 }

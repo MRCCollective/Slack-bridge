@@ -26,11 +26,11 @@
     <h2 class="h4">2. Configure Slack Bridge</h2>
     <ol class="mb-0">
         <li>Create a <strong>Project</strong> for the application that will send events, and paste the Slack webhook URL there.</li>
-        <li>Create an <strong>API Key</strong> for that project and store it in the calling app's secret configuration.</li>
-        <li>Create an <strong>Event Definition</strong> with a stable key such as <code>user_signup</code>.</li>
+        <li>Open the project and create an <strong>API Key</strong>. Store it in the calling app's secret configuration.</li>
+        <li>Create an <strong>Event Definition</strong> inside the project with a stable key such as <code>user_signup</code>.</li>
         <li>Write a Scriban template using fields from the event payload.</li>
         <li>Leave the event-level custom webhook off unless this event should go to a different Slack destination.</li>
-        <li>Use <strong>Send test</strong> to confirm Slack delivery.</li>
+        <li>Use <strong>Send test</strong> from the project workspace to confirm Slack delivery.</li>
     </ol>
 </div>
 

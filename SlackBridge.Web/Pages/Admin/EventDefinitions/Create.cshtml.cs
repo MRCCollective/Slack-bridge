@@ -27,7 +27,15 @@ public sealed class CreateModel(
     [BindProperty]
     public string SubmitAction { get; set; } = "Create";
 
-    public async Task OnGetAsync(CancellationToken cancellationToken) => await LoadProjectsAsync(cancellationToken);
+    public async Task OnGetAsync(int? projectId, CancellationToken cancellationToken)
+    {
+        if (projectId.HasValue)
+        {
+            EventDefinition.ProjectId = projectId.Value;
+        }
+
+        await LoadProjectsAsync(cancellationToken);
+    }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
@@ -47,7 +55,7 @@ public sealed class CreateModel(
         EventDefinition.CustomerInstanceId = customerInstanceContext.CustomerInstanceId;
         dbContext.EventDefinitions.Add(EventDefinition);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return RedirectToPage("Index");
+        return RedirectToPage("/Admin/Projects/Details", new { id = EventDefinition.ProjectId });
     }
 
     private async Task<IActionResult> SendTestAsync(CancellationToken cancellationToken)
@@ -95,6 +103,6 @@ public sealed class CreateModel(
             .Where(project => project.CustomerInstanceId == customerInstanceContext.CustomerInstanceId)
             .OrderBy(project => project.Name)
             .ToListAsync(cancellationToken);
-        ProjectOptions = new SelectList(projects, "Id", "Name");
+        ProjectOptions = new SelectList(projects, "Id", "Name", EventDefinition.ProjectId);
     }
 }

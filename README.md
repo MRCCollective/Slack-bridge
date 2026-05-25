@@ -177,12 +177,12 @@ Open the setup page after first run:
 http://localhost:5019/Account/Register
 ```
 
-Create the first admin user, then configure:
+Create the first admin user, then open **Projects** and configure:
 
 1. A project with a Slack webhook URL
-2. An API key
-3. An event definition
-4. A Scriban template
+2. An API key inside that project
+3. Event definitions inside that project
+4. Scriban templates for those events
 
 Event definitions use the project Slack webhook by default. Enable the event-level custom webhook only when one event must route to a different Slack destination.
 

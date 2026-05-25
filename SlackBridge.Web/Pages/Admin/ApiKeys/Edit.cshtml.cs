@@ -38,7 +38,7 @@ public sealed class EditModel(SlackBridgeDbContext dbContext, ICustomerInstanceC
 
         dbContext.Attach(ApiKey).State = EntityState.Modified;
         await dbContext.SaveChangesAsync(cancellationToken);
-        return RedirectToPage("Index");
+        return RedirectToPage("/Admin/Projects/Details", new { id = ApiKey.ProjectId });
     }
 
     private async Task LoadProjectsAsync(CancellationToken cancellationToken)

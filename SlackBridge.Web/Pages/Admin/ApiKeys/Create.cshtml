@@ -17,7 +17,14 @@
         <span asp-validation-for="Input.Name" class="text-danger"></span>
     </div>
     <button class="btn btn-primary" type="submit">Create</button>
-    <a class="btn btn-link" asp-page="Index">Cancel</a>
+    @if (Model.Input.ProjectId > 0)
+    {
+        <a class="btn btn-link" asp-page="/Admin/Projects/Details" asp-route-id="@Model.Input.ProjectId">Cancel</a>
+    }
+    else
+    {
+        <a class="btn btn-link" asp-page="/Admin/Projects/Index">Cancel</a>
+    }
 </form>
 
 @section Scripts { <partial name="_ValidationScriptsPartial" /> }

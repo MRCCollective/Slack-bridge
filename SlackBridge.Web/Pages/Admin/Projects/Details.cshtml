@@ -1,0 +1,147 @@
+@page "{id:int}"
+@model SlackBridge.Web.Pages.Admin.Projects.DetailsModel
+@{
+    ViewData["Title"] = Model.ProjectName;
+}
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="mb-1">@Model.ProjectName</h1>
+        <p class="text-muted mb-0">@Model.Description</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" asp-page="Edit" asp-route-id="@Model.ProjectId">Settings</a>
+        <a class="btn btn-link" asp-page="Index">Back</a>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-info">@Model.StatusMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.CreatedKey))
+{
+    <div class="alert alert-success">
+        <div class="fw-semibold">New API key created.</div>
+        <div class="d-flex gap-2 align-items-center">
+            <code class="api-key-value">@Model.CreatedKey</code>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-copy="@Model.CreatedKey">Copy</button>
+        </div>
+    </div>
+}
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">Project Settings</h2>
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Slack webhook</dt>
+        <dd class="col-sm-9">@(Model.HasSlackWebhook ? "Configured" : "Missing")</dd>
+        <dt class="col-sm-3">Created</dt>
+        <dd class="col-sm-9">@Model.Created</dd>
+    </dl>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">API Keys</h2>
+        <a class="btn btn-sm btn-primary" asp-page="/Admin/ApiKeys/Create" asp-route-projectId="@Model.ProjectId">New API key</a>
+    </div>
+    <table class="table table-striped align-middle mb-0">
+        <thead>
+        <tr><th>Name</th><th>API key</th><th>Active</th><th>Last used</th><th></th></tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.ApiKeys)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(item.ApiKey))
+                    {
+                        <div class="d-flex gap-2 align-items-center">
+                            <code class="api-key-value">@item.ApiKey</code>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-copy="@item.ApiKey">Copy</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Stored as hash only: <code>@item.KeyPrefix...</code></span>
+                    }
+                </td>
+                <td>@item.IsActive</td>
+                <td>@item.LastUsed</td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" asp-page="/Admin/ApiKeys/Edit" asp-route-id="@item.Id">Edit</a>
+                    <a class="btn btn-sm btn-outline-danger" asp-page="/Admin/ApiKeys/Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Event Definitions</h2>
+        <a class="btn btn-sm btn-primary" asp-page="/Admin/EventDefinitions/Create" asp-route-projectId="@Model.ProjectId">New event</a>
+    </div>
+    <table class="table table-striped align-middle mb-0">
+        <thead>
+        <tr><th>Key</th><th>Webhook</th><th>Active</th><th></th></tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.EventDefinitions)
+        {
+            <tr>
+                <td><code>@item.Key</code></td>
+                <td>@(item.UsesCustomWebhook ? "Event override" : "Project default")</td>
+                <td>@item.IsActive</td>
+                <td class="text-end">
+                    <form method="post" asp-page-handler="TestEvent" asp-route-id="@Model.ProjectId" asp-route-eventDefinitionId="@item.Id" class="d-inline">
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Test send</button>
+                    </form>
+                    <a class="btn btn-sm btn-outline-secondary" asp-page="/Admin/EventDefinitions/Edit" asp-route-id="@item.Id">Edit</a>
+                    <a class="btn btn-sm btn-outline-danger" asp-page="/Admin/EventDefinitions/Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<div class="surface-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Recent Logs</h2>
+        <a class="btn btn-sm btn-outline-secondary" asp-page="/Admin/Logs/Index">All logs</a>
+    </div>
+    <table class="table table-striped align-middle mb-0">
+        <thead>
+        <tr><th>Created</th><th>Event</th><th>Status</th><th>Slack</th><th>Result</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var log in Model.Logs)
+        {
+            <tr>
+                <td>@log.Created</td>
+                <td><code>@log.EventKey</code></td>
+                <td>@log.Status</td>
+                <td>@log.SlackStatusCode</td>
+                <td class="text-truncate" style="max-width: 420px;">@log.ResultMessage</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll("[data-copy]").forEach((button) => {
+            button.addEventListener("click", async () => {
+                await navigator.clipboard.writeText(button.dataset.copy);
+                const originalText = button.textContent;
+                button.textContent = "Copied";
+                window.setTimeout(() => button.textContent = originalText, 1200);
+            });
+        });
+    </script>
+}

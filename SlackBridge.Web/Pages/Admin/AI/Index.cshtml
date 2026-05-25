@@ -31,7 +31,7 @@ Goal: fix or add an integration without changing unrelated behavior.
 
 Architecture:
 - .NET 9 ASP.NET Core monolith.
-- Razor Pages admin UI under /Pages/Admin.
+- Razor Pages admin UI under /Pages/Admin, with Projects as the main workspace.
 - Web API endpoint: POST /api/events.
 - EF Core SQL Server DbContext: SlackBridgeDbContext.
 - Identity user model: ApplicationUser.
@@ -60,6 +60,7 @@ Important files:
 - Services/UsageService.cs
 - Services/FailedSlackRetryWorker.cs
 - Pages/Admin/EventDefinitions/
+- Pages/Admin/Projects/Details.cshtml
 
 Rules:
 - Keep changes small and production-ready.

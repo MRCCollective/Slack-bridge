@@ -31,6 +31,6 @@ public sealed class EditModel(SlackBridgeDbContext dbContext) : PageModel
 
         dbContext.Attach(Project).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
         await dbContext.SaveChangesAsync(cancellationToken);
-        return RedirectToPage("Index");
+        return RedirectToPage("Details", new { id = Project.Id });
     }
 }

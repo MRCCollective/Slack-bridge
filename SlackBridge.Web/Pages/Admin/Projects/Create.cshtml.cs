@@ -34,6 +34,6 @@ public sealed class CreateModel(
         Project.CustomerInstanceId = customerInstanceContext.CustomerInstanceId;
         dbContext.Projects.Add(Project);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return RedirectToPage("Index");
+        return RedirectToPage("Details", new { id = Project.Id });
     }
 }
