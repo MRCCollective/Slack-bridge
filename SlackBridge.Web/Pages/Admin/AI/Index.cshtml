@@ -19,7 +19,7 @@ Slack Bridge is already hosted separately. Do not build Slack delivery in this a
 
 Configuration to use:
 - SlackBridge:BaseUrl = https://your-slack-bridge.example.com
-- SlackBridge:ApiKey = sb_your_project_key
+- SlackBridge:ApiKey = sb_your_bot_key
 
 HTTP contract:
 - Method: POST
@@ -81,7 +81,7 @@ Implement the Slack Bridge event described here: [describe the event, where it h
     <h2 class="h4">What Slack Bridge does</h2>
     <p>
         Slack Bridge is a single-tenant ASP.NET Core 9 application that receives event payloads from internal apps,
-        renders Scriban templates, and sends messages to project-level Slack Incoming Webhooks.
+        renders Scriban templates, and sends messages through Slack bot webhooks.
     </p>
     <p class="mb-0">
         The app uses Razor Pages, Web API controllers, ASP.NET Core Identity, EF Core with SQL Server, hashed API keys,
@@ -97,7 +97,7 @@ Goal: fix or add an integration without changing unrelated behavior.
 
 Architecture:
 - .NET 9 ASP.NET Core monolith.
-- Razor Pages admin UI under /Pages/Admin, with Projects as the main workspace.
+- Razor Pages admin UI under /Pages/Admin, with Slack bots as the main workspace.
 - Web API endpoint: POST /api/events.
 - EF Core SQL Server DbContext: SlackBridgeDbContext.
 - Identity user model: ApplicationUser.
@@ -107,10 +107,10 @@ Architecture:
 
 Core event flow:
 1. Validate x-api-key using IApiKeyValidator.
-2. Find active EventDefinition for the API key project and event key.
+2. Find active EventDefinition for the API key's Slack bot and event key.
 3. Enforce usage limits with IUsageService.
 4. Render the Scriban template with ITemplateService.
-5. Send the rendered text through ISlackService using the project Slack webhook URL, unless the event definition has its disabled-by-default custom webhook override enabled.
+5. Send the rendered text through ISlackService using the Slack bot webhook URL, unless the event definition has its disabled-by-default custom webhook override enabled.
 6. Write EventLog for success or failure.
 7. Mark failed Slack sends for retry with FailedSlackRetryWorker.
 
@@ -148,10 +148,10 @@ Fix the integration issue described below.</code></pre>
             <h2 class="h4">Integration checklist</h2>
             <ul class="mb-0">
                 <li>Confirm the caller sends <code>x-api-key</code>.</li>
-                <li>Confirm the API key is active and belongs to the expected project.</li>
+                <li>Confirm the API key is active and belongs to the expected Slack bot.</li>
                 <li>Confirm the event key exactly matches an active event definition.</li>
                 <li>Render the Scriban template with representative JSON.</li>
-                <li>Check the project Slack webhook URL, any enabled event-level override, and response status.</li>
+                <li>Check the Slack bot webhook URL, any enabled event-level override, and response status.</li>
                 <li>Inspect <code>EventLogs</code> for result messages and retry state.</li>
                 <li>Check monthly usage limits if requests return <code>429</code>.</li>
             </ul>

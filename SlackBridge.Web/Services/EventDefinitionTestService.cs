@@ -29,7 +29,7 @@ public sealed class EventDefinitionTestService(
 
         if (project is null)
         {
-            throw new InvalidOperationException("Choose a project before sending a test.");
+            throw new InvalidOperationException("Choose a Slack bot before sending a test.");
         }
 
         definition.Project = project;
@@ -37,7 +37,7 @@ public sealed class EventDefinitionTestService(
 
         if (string.IsNullOrWhiteSpace(webhookUrl))
         {
-            throw new InvalidOperationException("Add a Slack webhook URL to the project, or enable a custom webhook URL for this event.");
+            throw new InvalidOperationException("Add a Slack webhook URL to the Slack bot, or enable a custom webhook URL for this event.");
         }
 
         var payloadJson = JsonSerializer.Serialize(new

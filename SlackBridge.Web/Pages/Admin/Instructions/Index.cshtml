@@ -18,7 +18,7 @@
         <li>Enable <strong>Incoming Webhooks</strong>.</li>
         <li>Create a webhook for the Slack channel that should receive messages.</li>
         <li>Copy the webhook URL. It should look like <code>https://hooks.slack.com/services/...</code>.</li>
-        <li>Store the webhook URL in Slack Bridge on the project.</li>
+        <li>Store the webhook URL in Slack Bridge on the Slack bot.</li>
     </ol>
     <p class="text-muted mt-3 mb-0">
         Slack's official guide is here:
@@ -29,12 +29,12 @@
 <div class="surface-card p-4 mb-4">
     <h2 class="h4">2. Configure Slack Bridge</h2>
     <ol class="mb-0">
-        <li>Create a <strong>Project</strong> for the application that will send events, and paste the Slack webhook URL there.</li>
-        <li>Open the project and create an <strong>API Key</strong>. Store it in the calling app's secret configuration.</li>
-        <li>Create an <strong>Event Definition</strong> inside the project with a stable key such as <code>user_signup</code>.</li>
+        <li>Create a <strong>Slack bot</strong> for the application that will send events, and paste the Slack webhook URL there.</li>
+        <li>Open the Slack bot and create an <strong>API Key</strong>. Store it in the calling app's secret configuration.</li>
+        <li>Create an <strong>Event Definition</strong> inside the Slack bot with a stable key such as <code>user_signup</code>.</li>
         <li>Write a Scriban template using fields from the event payload.</li>
         <li>Leave the event-level custom webhook off unless this event should go to a different Slack destination.</li>
-        <li>Use <strong>Send test</strong> from the project workspace to confirm Slack delivery.</li>
+        <li>Use <strong>Send test</strong> from the Slack bot workspace to confirm Slack delivery.</li>
     </ol>
 </div>
 
@@ -61,7 +61,7 @@ Source: {{ source }}</code></pre>
 
 Use these configuration values:
 - SlackBridge:BaseUrl = https://your-slack-bridge.example.com
-- SlackBridge:ApiKey = sb_your_project_key
+- SlackBridge:ApiKey = sb_your_bot_key
 
 Requirements:
 - Create a small typed client named SlackBridgeClient.
@@ -111,7 +111,7 @@ Requirements:
   method: "POST",
   headers: {
     "content-type": "application/json",
-    "x-api-key": "sb_your_project_key"
+    "x-api-key": "sb_your_bot_key"
   },
   body: JSON.stringify({
     key: "user_signup",
@@ -128,9 +128,9 @@ Requirements:
     <h2 class="h4">Troubleshooting</h2>
     <ul class="mb-0">
         <li><code>401</code>: missing, inactive, or incorrect API key.</li>
-        <li><code>404</code>: no active event definition matches the event key for that project.</li>
+        <li><code>404</code>: no active event definition matches the event key for that Slack bot.</li>
         <li><code>429</code>: current plan usage limit has been reached.</li>
-        <li><code>502</code>: Slack delivery failed. Check the event log result, the project's webhook URL, and any enabled event-level override.</li>
+        <li><code>502</code>: Slack delivery failed. Check the event log result, the Slack bot's webhook URL, and any enabled event-level override.</li>
         <li>Use <strong>Logs</strong> to inspect payloads, rendered messages, Slack status codes, and retry state.</li>
     </ul>
 </div>

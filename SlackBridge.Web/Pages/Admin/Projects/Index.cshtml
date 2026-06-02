@@ -1,17 +1,17 @@
 @page
 @model SlackBridge.Web.Pages.Admin.Projects.IndexModel
 @{
-    ViewData["Title"] = "Projects";
+    ViewData["Title"] = "Slack bots";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>Projects</h1>
-    <a class="btn btn-primary" asp-page="Create">New project</a>
+    <h1>Slack bots</h1>
+    <a class="btn btn-primary" asp-page="Create">New Slack bot</a>
 </div>
 
 <table class="table table-striped align-middle">
     <thead>
-    <tr><th>Name</th><th>Description</th><th>Slack</th><th></th></tr>
+    <tr><th>Slack bot name</th><th>Description</th><th>Slack</th><th></th></tr>
     </thead>
     <tbody>
     @foreach (var item in Model.Projects)

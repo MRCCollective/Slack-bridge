@@ -11,7 +11,7 @@
     </div>
     <div class="d-flex gap-2">
         <a class="btn btn-outline-secondary" asp-page="Edit" asp-route-id="@Model.ProjectId">Settings</a>
-        <a class="btn btn-link" asp-page="Index">Back</a>
+        <a class="btn btn-link" asp-page="Index">Back to Slack bots</a>
     </div>
 </div>
 
@@ -32,7 +32,7 @@
 }
 
 <div class="surface-card p-4 mb-4">
-    <h2 class="h4">Project Settings</h2>
+    <h2 class="h4">Slack bot settings</h2>
     <dl class="row mb-0">
         <dt class="col-sm-3">Slack webhook</dt>
         <dd class="col-sm-9">@(Model.HasSlackWebhook ? "Configured" : "Missing")</dd>
@@ -94,7 +94,7 @@
         {
             <tr>
                 <td><code>@item.Key</code></td>
-                <td>@(item.UsesCustomWebhook ? "Event override" : "Project default")</td>
+                <td>@(item.UsesCustomWebhook ? "Event override" : "Slack bot default")</td>
                 <td>@item.IsActive</td>
                 <td class="text-end">
                     <form method="post" asp-page-handler="TestEvent" asp-route-id="@Model.ProjectId" asp-route-eventDefinitionId="@item.Id" class="d-inline">

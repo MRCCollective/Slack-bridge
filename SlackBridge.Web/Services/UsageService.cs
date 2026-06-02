@@ -102,7 +102,7 @@ public sealed class UsageService(
         var snapshot = await GetCurrentAsync(cancellationToken);
         if (snapshot.ProjectCount >= snapshot.Limits.Projects)
         {
-            throw new PlanLimitExceededException("Project limit exceeded for the current plan.");
+            throw new PlanLimitExceededException("Slack bot limit exceeded for the current plan.");
         }
     }
 

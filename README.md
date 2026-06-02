@@ -4,7 +4,7 @@
   <img src="SlackBridge.Web/wwwroot/img/slackbridge-logo.png" alt="Slack Bridge" width="420" />
 </p>
 
-Slack Bridge is an internal event-to-Slack gateway. It turns application events into structured Slack messages without adding Slack-specific code to every project.
+Slack Bridge is an internal event-to-Slack gateway. It turns application events into structured Slack messages without adding Slack-specific code to every app.
 
 Apps send events to one central API. Slack Bridge handles authentication, template rendering, routing to the configured Slack webhook, delivery, usage tracking, and event logging.
 
@@ -26,10 +26,10 @@ Your App -> Slack Bridge API -> Scriban Template -> Slack Incoming Webhook
 ```
 
 1. An application sends an event such as `user_signup` or `payment_received`.
-2. Slack Bridge authenticates the request with a project API key.
-3. The event key is matched to an `EventDefinition` for the API key's project.
+2. Slack Bridge authenticates the request with a Slack bot API key.
+3. The event key is matched to an `EventDefinition` for the API key's Slack bot.
 4. The configured Scriban template is rendered with the event data.
-5. The rendered message is posted to the project's Slack webhook, unless the event definition has its optional webhook override enabled.
+5. The rendered message is posted to the Slack bot's webhook, unless the event definition has its optional webhook override enabled.
 6. Success or failure is written to `EventLogs`.
 
 ## Example
@@ -38,7 +38,7 @@ Request:
 
 ```http
 POST /api/events
-x-api-key: sb_your_project_key
+x-api-key: sb_your_bot_key
 Content-Type: application/json
 ```
 
@@ -70,11 +70,11 @@ Plan: pro
 
 ## Features
 
-- API key authentication per project
+- API key authentication per Slack bot
 - Hashed API key storage
-- Configurable projects, API keys, and event definitions
+- Configurable Slack bots, API keys, and event definitions
 - Dynamic Scriban message templates
-- Project-level Slack Incoming Webhook delivery
+- Slack bot webhook delivery
 - Optional event-level Slack webhook override, disabled by default
 - Razor Pages admin dashboard
 - ASP.NET Core Identity login/logout and first-admin setup
@@ -177,22 +177,22 @@ Open the setup page after first run:
 http://localhost:5019/Account/Register
 ```
 
-Create the first admin user, then open **Projects** and configure:
+Create the first admin user, then open **Slack bots** and configure:
 
-1. A project with a Slack webhook URL
-2. An API key inside that project
-3. Event definitions inside that project
+1. A Slack bot with a Slack webhook URL
+2. An API key inside that Slack bot
+3. Event definitions inside that Slack bot
 4. Scriban templates for those events
 
-Event definitions use the project Slack webhook by default. Enable the event-level custom webhook only when one event must route to a different Slack destination.
+Event definitions use the Slack bot webhook by default. Enable the event-level custom webhook only when one event must route to a different Slack destination.
 
 ## Plans
 
 Plan enforcement is local for now:
 
-- Free: 500 events/month, 2 API keys, 1 project
-- Pro: 25,000 events/month, 20 API keys, 25 projects
-- Scale: 250,000 events/month, 100 API keys, 250 projects
+- Free: 500 events/month, 2 API keys, 1 Slack bot
+- Pro: 25,000 events/month, 20 API keys, 25 Slack bots
+- Scale: 250,000 events/month, 100 API keys, 250 Slack bots
 
 The billing page updates the local subscription plan. Stripe integration can be added later behind `IBillingService`.
 

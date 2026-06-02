@@ -84,7 +84,7 @@ public sealed class CreateModel(
 
     public sealed class ApiKeyInput
     {
-        [Display(Name = "Project")]
+        [Display(Name = "Slack bot")]
         public int ProjectId { get; set; }
 
         [Required, MaxLength(120)]

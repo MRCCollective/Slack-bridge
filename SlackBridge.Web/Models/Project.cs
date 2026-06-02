@@ -9,6 +9,7 @@ public sealed class Project
     public int CustomerInstanceId { get; set; }
     public CustomerInstance? CustomerInstance { get; set; }
 
+    [Display(Name = "Slack bot name")]
     [Required, MaxLength(160)]
     public string Name { get; set; } = string.Empty;
 
