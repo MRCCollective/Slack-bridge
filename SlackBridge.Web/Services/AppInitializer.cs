@@ -35,6 +35,7 @@ public static class AppInitializer
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var oldSuperUser = await userManager.FindByEmailAsync("daniel@mrccollective");
             var newSuperUser = await userManager.FindByEmailAsync("info@mrccollective");
+            var currentSuperUser = await userManager.FindByEmailAsync("daniel@mrccollective.se");
             if (oldSuperUser is not null)
             {
                 if (newSuperUser is null)
@@ -55,6 +56,11 @@ public static class AppInitializer
             if (newSuperUser is not null && !await userManager.IsInRoleAsync(newSuperUser, ApplicationRoles.SuperUser))
             {
                 await userManager.AddToRoleAsync(newSuperUser, ApplicationRoles.SuperUser);
+            }
+
+            if (currentSuperUser is not null && !await userManager.IsInRoleAsync(currentSuperUser, ApplicationRoles.SuperUser))
+            {
+                await userManager.AddToRoleAsync(currentSuperUser, ApplicationRoles.SuperUser);
             }
         }
     }

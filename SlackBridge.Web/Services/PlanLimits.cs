@@ -6,11 +6,14 @@ public sealed record PlanLimitSet(int EventsPerMonth, int ApiKeys, int Projects)
 
 public interface IPlanLimitService
 {
+    PlanLimitSet Unlimited { get; }
     PlanLimitSet GetLimits(PlanType plan);
 }
 
 public sealed class PlanLimitService : IPlanLimitService
 {
+    public PlanLimitSet Unlimited { get; } = new(int.MaxValue, int.MaxValue, int.MaxValue);
+
     public PlanLimitSet GetLimits(PlanType plan) =>
         plan switch
         {

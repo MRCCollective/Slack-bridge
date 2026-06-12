@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SlackBridge.Web.Data;
 using SlackBridge.Web.Models;
@@ -26,6 +27,7 @@ public sealed record UsageSnapshot(
 public sealed class UsageService(
     SlackBridgeDbContext dbContext,
     ICustomerInstanceContext customerInstanceContext,
+    IHttpContextAccessor httpContextAccessor,
     IPlanLimitService planLimitService) : IUsageService
 {
     public Task<UsageSnapshot> GetCurrentAsync(CancellationToken cancellationToken) =>
@@ -38,7 +40,9 @@ public sealed class UsageService(
             .Include(instance => instance.Subscription)
             .SingleAsync(instance => instance.Id == customerInstanceId, cancellationToken);
         var plan = customerInstance.Subscription?.Plan ?? PlanType.Free;
-        var limits = planLimitService.GetLimits(plan);
+        var limits = await HasUnlimitedUsageAsync(customerInstanceId, cancellationToken)
+            ? planLimitService.Unlimited
+            : planLimitService.GetLimits(plan);
 
         var eventsSent = await dbContext.UsageMetrics
             .Where(metric =>
@@ -62,6 +66,11 @@ public sealed class UsageService(
 
     public async Task EnsureEventLimitAsync(int customerInstanceId, CancellationToken cancellationToken)
     {
+        if (await HasUnlimitedUsageAsync(customerInstanceId, cancellationToken))
+        {
+            return;
+        }
+
         var snapshot = await GetCurrentAsync(customerInstanceId, cancellationToken);
         if (snapshot.EventsSentThisMonth >= snapshot.Limits.EventsPerMonth)
         {
@@ -99,6 +108,11 @@ public sealed class UsageService(
 
     public async Task EnsureProjectLimitAsync(CancellationToken cancellationToken)
     {
+        if (await HasUnlimitedUsageAsync(customerInstanceContext.CustomerInstanceId, cancellationToken))
+        {
+            return;
+        }
+
         var snapshot = await GetCurrentAsync(cancellationToken);
         if (snapshot.ProjectCount >= snapshot.Limits.Projects)
         {
@@ -108,11 +122,39 @@ public sealed class UsageService(
 
     public async Task EnsureApiKeyLimitAsync(CancellationToken cancellationToken)
     {
+        if (await HasUnlimitedUsageAsync(customerInstanceContext.CustomerInstanceId, cancellationToken))
+        {
+            return;
+        }
+
         var snapshot = await GetCurrentAsync(cancellationToken);
         if (snapshot.ApiKeyCount >= snapshot.Limits.ApiKeys)
         {
             throw new PlanLimitExceededException("API key limit exceeded for the current plan.");
         }
+    }
+
+    private async Task<bool> HasUnlimitedUsageAsync(int customerInstanceId, CancellationToken cancellationToken)
+    {
+        var user = httpContextAccessor.HttpContext?.User;
+        if (user?.Identity?.IsAuthenticated == true && user.IsInRole(ApplicationRoles.SuperUser))
+        {
+            return true;
+        }
+
+        return await dbContext.Users
+            .Where(applicationUser => applicationUser.CustomerInstanceId == customerInstanceId)
+            .Join(
+                dbContext.UserRoles,
+                applicationUser => applicationUser.Id,
+                userRole => userRole.UserId,
+                (applicationUser, userRole) => userRole.RoleId)
+            .Join(
+                dbContext.Roles,
+                roleId => roleId,
+                role => role.Id,
+                (_, role) => role.Name)
+            .AnyAsync(roleName => roleName == ApplicationRoles.SuperUser, cancellationToken);
     }
 }
 
