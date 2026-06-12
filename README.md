@@ -4,9 +4,9 @@
   <img src="SlackBridge.Web/wwwroot/img/slackbridge-logo.png" alt="Slack Bridge" width="420" />
 </p>
 
-Slack Bridge is an internal event-to-Slack gateway. It turns application events into structured Slack messages without adding Slack-specific code to every app.
+Slack Bridge is an internal Slack integration gateway. It turns application events into structured Slack messages without adding Slack-specific code to every app, and it can receive Slack slash commands, verify them, and forward a normalized payload to a downstream app.
 
-Apps send events to one central API. Slack Bridge handles authentication, template rendering, routing to the configured Slack webhook, delivery, usage tracking, and event logging.
+Apps send events to one central API. Slack Bridge handles authentication, template rendering, routing to the configured Slack webhook, delivery, usage tracking, and event logging. For inbound slash commands, Slack Bridge handles Slack signatures, route lookup, downstream forwarding, Slack-compatible responses, and request outcome logging.
 
 ## Why Slack Bridge?
 
@@ -31,6 +31,19 @@ Your App -> Slack Bridge API -> Scriban Template -> Slack Incoming Webhook
 4. The configured Scriban template is rendered with the event data.
 5. The rendered message is posted to the Slack bot's webhook, unless the event definition has its optional webhook override enabled.
 6. Success or failure is written to `EventLogs`.
+
+Inbound slash commands use the opposite direction:
+
+```text
+Slack Slash Command -> Slack Bridge -> Downstream App Callback -> Slack Response
+```
+
+1. Slack posts an `application/x-www-form-urlencoded` slash command to `POST /api/slack/commands`.
+2. Slack Bridge verifies `X-Slack-Signature` and `X-Slack-Request-Timestamp` with the configured route signing secret.
+3. The command name and optional Slack team ID are matched to an active `SlackCommandRoute`.
+4. Slack Bridge forwards a normalized JSON payload to the route's downstream URL.
+5. A downstream Slack JSON response is relayed, a 204 becomes an empty 200, and failures become a safe ephemeral fallback.
+6. The request outcome is written to `SlackCommandLogs`.
 
 ## Example
 
@@ -68,11 +81,66 @@ Email: user@example.com
 Plan: pro
 ```
 
+## Slash Command Gateway
+
+Slack command request URL:
+
+```http
+POST /api/slack/commands
+Content-Type: application/x-www-form-urlencoded
+X-Slack-Signature: v0=...
+X-Slack-Request-Timestamp: 1781270000
+```
+
+Create routes in **Slack commands**. Each route belongs to a Slack bot/project and configures:
+
+- slash command name, such as `/shoppingtajm`
+- Slack signing secret, encrypted at rest
+- downstream callback URL
+- downstream auth header and encrypted shared secret
+- optional allowed Slack team ID
+- active/inactive state
+
+Slack Bridge forwards this JSON to the downstream app:
+
+```json
+{
+  "type": "slash_command",
+  "teamId": "T123",
+  "teamDomain": "example",
+  "channelId": "C123",
+  "channelName": "general",
+  "userId": "U123",
+  "userName": "deprecated_from_slack_if_present",
+  "command": "/shoppingtajm",
+  "text": "list",
+  "triggerId": "123.456",
+  "responseUrl": "https://hooks.slack.com/commands/...",
+  "apiAppId": "A123",
+  "raw": {
+    "command": "/shoppingtajm",
+    "text": "list"
+  }
+}
+```
+
+Downstream apps may return `200` with a Slack JSON response or `204` for an empty acknowledgement. `4xx`, `5xx`, invalid JSON, timeout, or transport failures are converted to:
+
+```json
+{
+  "response_type": "ephemeral",
+  "text": "Kommandot togs emot men kunde inte behandlas just nu."
+}
+```
+
 ## Features
 
 - API key authentication per Slack bot
 - Hashed API key storage
 - Configurable Slack bots, API keys, and event definitions
+- Configurable inbound Slack slash command routes
+- Slack request signature and timestamp verification
+- Downstream slash command forwarding with fallback Slack responses
 - Dynamic Scriban message templates
 - Slack bot webhook delivery
 - Optional event-level Slack webhook override, disabled by default
@@ -80,6 +148,7 @@ Plan: pro
 - ASP.NET Core Identity login/logout and first-admin setup
 - Admin and Member roles
 - Event logs for debugging and traceability
+- Inbound slash command logs for validation, routing, and downstream outcomes
 - Monthly usage tracking
 - Local plan enforcement for Free, Pro, and Scale plans
 - Background retry worker for failed Slack deliveries
@@ -94,6 +163,7 @@ Plan: pro
 - SQL Server
 - Scriban
 - Slack Incoming Webhooks
+- Slack Slash Commands
 
 Stripe is intentionally skipped for now. Billing is represented by a local `Subscription` record behind `IBillingService`, so Stripe Checkout and webhooks can be added later without changing the event ingestion pipeline.
 
@@ -104,6 +174,9 @@ Slack Bridge is a modular monolith. The web app contains the API, admin UI, Iden
 Core services:
 
 - `ISlackService` posts rendered messages to Slack.
+- `ISlackRequestVerifier` validates Slack signed requests.
+- `ISlackCommandGatewayService` routes verified slash command payloads.
+- `IDownstreamSlackCommandClient` forwards normalized command JSON to downstream apps.
 - `ITemplateService` renders Scriban templates from arbitrary JSON.
 - `IApiKeyValidator` validates hashed API keys.
 - `IEventIngestionService` coordinates event handling.
@@ -120,9 +193,11 @@ Single-tenancy is explicit through `CustomerInstanceId`. Today each deployment u
 SlackBridge.Web/
   Controllers/
     EventsController.cs
+    SlackCommandsController.cs
   Contracts/
     EventRequest.cs
     EventResponse.cs
+    SlackCommandEnvelope.cs
   Data/
     SlackBridgeDbContext.cs
     Migrations/
@@ -136,6 +211,9 @@ SlackBridge.Web/
     PlanType.cs
     Project.cs
     RetryState.cs
+    SlackCommandLog.cs
+    SlackCommandLogStatus.cs
+    SlackCommandRoute.cs
     Subscription.cs
     UsageMetric.cs
   Pages/
@@ -146,6 +224,7 @@ SlackBridge.Web/
       EventDefinitions/
       Logs/
       Projects/
+      SlackCommandRoutes/
       Usage/
   Services/
     ApiKeyGenerator.cs
@@ -156,6 +235,9 @@ SlackBridge.Web/
     EventLogService.cs
     FailedSlackRetryWorker.cs
     PlanLimits.cs
+    SlackCommandForwarder.cs
+    SlackCommandGatewayService.cs
+    SlackRequestVerifier.cs
     SlackService.cs
     TemplateService.cs
     UsageService.cs
@@ -186,6 +268,14 @@ Create the first admin user, then open **Slack bots** and configure:
 
 Event definitions use the Slack bot webhook by default. Enable the event-level custom webhook only when one event must route to a different Slack destination.
 
+For slash commands, open **Slack commands**, create a route, and set the Slack app slash command Request URL to:
+
+```text
+https://your-slack-bridge.example.com/api/slack/commands
+```
+
+Keep Shoppingtajm-style business logic in the downstream app. Slack Bridge only verifies, normalizes, forwards, relays, falls back, and logs. See [docs/slack-slash-commands.md](docs/slack-slash-commands.md) for the downstream contract.
+
 ## Plans
 
 Plan enforcement is local for now:
@@ -208,6 +298,7 @@ The billing page updates the local subscription plan. Stripe integration can be 
 ## Roadmap
 
 - Slack Bot support via `chat.postMessage`
+- Interactive callbacks, modals, and App Home support
 - Multi-channel routing rules
 - Rich Slack Block Kit templates
 - Plugin system for Email, Discord, and generic webhooks

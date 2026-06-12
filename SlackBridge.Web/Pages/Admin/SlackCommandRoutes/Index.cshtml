@@ -1,0 +1,64 @@
+@page
+@model SlackBridge.Web.Pages.Admin.SlackCommandRoutes.IndexModel
+@{
+    ViewData["Title"] = "Slack commands";
+}
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="mb-1">Slack commands</h1>
+        <p class="text-muted mb-0">Inbound slash commands are verified by SlackBridge and forwarded to a downstream app.</p>
+    </div>
+    <a class="btn btn-primary" asp-page="Create">New route</a>
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <h2 class="h4">Slack app setup</h2>
+    <ol class="mb-3">
+        <li>In your Slack app, open <strong>Slash Commands</strong> and create the command.</li>
+        <li>Set <strong>Request URL</strong> to <code>@Model.RequestUrl</code>.</li>
+        <li>Copy the app <strong>Signing Secret</strong> into the matching route in SlackBridge.</li>
+        <li>Return Slack JSON or HTTP 204 from your downstream callback.</li>
+    </ol>
+    <div class="d-flex gap-2 align-items-center">
+        <code class="api-key-value">@Model.RequestUrl</code>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-copy="@Model.RequestUrl">Copy</button>
+    </div>
+</div>
+
+<table class="table table-striped align-middle">
+    <thead>
+    <tr><th>Command</th><th>Slack bot</th><th>Downstream</th><th>Team</th><th>Active</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var route in Model.Routes)
+    {
+        <tr>
+            <td><code>@route.SlackCommand</code></td>
+            <td>@route.ProjectName</td>
+            <td class="text-truncate" style="max-width: 360px;">@route.DownstreamUrl</td>
+            <td>@(string.IsNullOrWhiteSpace(route.AllowedTeamId) ? "Any" : route.AllowedTeamId)</td>
+            <td>@route.IsActive</td>
+            <td class="text-end">
+                <form method="post" asp-page-handler="Toggle" asp-route-id="@route.Id" class="d-inline">
+                    <button class="btn btn-sm btn-outline-primary" type="submit">@(route.IsActive ? "Deactivate" : "Activate")</button>
+                </form>
+                <a class="btn btn-sm btn-outline-secondary" asp-page="Edit" asp-route-id="@route.Id">Edit</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll("[data-copy]").forEach((button) => {
+            button.addEventListener("click", async () => {
+                await navigator.clipboard.writeText(button.dataset.copy);
+                const originalText = button.textContent;
+                button.textContent = "Copied";
+                window.setTimeout(() => button.textContent = originalText, 1200);
+            });
+        });
+    </script>
+}

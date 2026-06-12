@@ -1,0 +1,73 @@
+@page "{id:int}"
+@model SlackBridge.Web.Pages.Admin.SlackCommandRoutes.EditModel
+@{
+    ViewData["Title"] = "Edit Slack command route";
+}
+
+<h1>Edit Slack command route</h1>
+
+<form method="post" class="surface-card p-4">
+    <input asp-for="Input.Id" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Input.ProjectId" class="form-label"></label>
+        <select asp-for="Input.ProjectId" asp-items="Model.ProjectOptions" class="form-select"></select>
+        <span asp-validation-for="Input.ProjectId" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="Input.IsActive" class="form-check-input" />
+        <label asp-for="Input.IsActive" class="form-check-label"></label>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.SlackCommand" class="form-label"></label>
+        <input asp-for="Input.SlackCommand" class="form-control" />
+        <span asp-validation-for="Input.SlackCommand" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.SlackSigningSecret" class="form-label"></label>
+        <input asp-for="Input.SlackSigningSecret" class="form-control" autocomplete="off" />
+        <div class="form-text">Current secret: @(Model.HasSlackSigningSecret ? "configured" : "missing"). Leave blank to keep it.</div>
+        <span asp-validation-for="Input.SlackSigningSecret" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.DownstreamUrl" class="form-label"></label>
+        <input asp-for="Input.DownstreamUrl" class="form-control" />
+        <span asp-validation-for="Input.DownstreamUrl" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.DownstreamAuthHeaderName" class="form-label"></label>
+        <input asp-for="Input.DownstreamAuthHeaderName" class="form-control" />
+        <span asp-validation-for="Input.DownstreamAuthHeaderName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.DownstreamAuthSecret" class="form-label"></label>
+        <input asp-for="Input.DownstreamAuthSecret" class="form-control" autocomplete="off" />
+        <div class="form-text">Current secret: @(Model.HasDownstreamAuthSecret ? "configured" : "missing"). Leave blank to keep it.</div>
+        <span asp-validation-for="Input.DownstreamAuthSecret" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="Input.ClearDownstreamAuthSecret" class="form-check-input" />
+        <label asp-for="Input.ClearDownstreamAuthSecret" class="form-check-label"></label>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.AllowedTeamId" class="form-label"></label>
+        <input asp-for="Input.AllowedTeamId" class="form-control" />
+        <span asp-validation-for="Input.AllowedTeamId" class="text-danger"></span>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-link" asp-page="Index">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

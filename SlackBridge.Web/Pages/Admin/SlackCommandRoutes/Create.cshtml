@@ -1,0 +1,65 @@
+@page
+@model SlackBridge.Web.Pages.Admin.SlackCommandRoutes.CreateModel
+@{
+    ViewData["Title"] = "New Slack command route";
+}
+
+<h1>New Slack command route</h1>
+
+<form method="post" class="surface-card p-4">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Input.ProjectId" class="form-label"></label>
+        <select asp-for="Input.ProjectId" asp-items="Model.ProjectOptions" class="form-select"></select>
+        <span asp-validation-for="Input.ProjectId" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="Input.IsActive" class="form-check-input" />
+        <label asp-for="Input.IsActive" class="form-check-label"></label>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.SlackCommand" class="form-label"></label>
+        <input asp-for="Input.SlackCommand" class="form-control" placeholder="/shoppingtajm" />
+        <span asp-validation-for="Input.SlackCommand" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.SlackSigningSecret" class="form-label"></label>
+        <input asp-for="Input.SlackSigningSecret" class="form-control" autocomplete="off" />
+        <span asp-validation-for="Input.SlackSigningSecret" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.DownstreamUrl" class="form-label"></label>
+        <input asp-for="Input.DownstreamUrl" class="form-control" placeholder="https://shoppingtajm.example.com/slack/commands" />
+        <span asp-validation-for="Input.DownstreamUrl" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.DownstreamAuthHeaderName" class="form-label"></label>
+        <input asp-for="Input.DownstreamAuthHeaderName" class="form-control" />
+        <span asp-validation-for="Input.DownstreamAuthHeaderName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.DownstreamAuthSecret" class="form-label"></label>
+        <input asp-for="Input.DownstreamAuthSecret" class="form-control" autocomplete="off" />
+        <span asp-validation-for="Input.DownstreamAuthSecret" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.AllowedTeamId" class="form-label"></label>
+        <input asp-for="Input.AllowedTeamId" class="form-control" placeholder="T123" />
+        <span asp-validation-for="Input.AllowedTeamId" class="text-danger"></span>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Create</button>
+    <a class="btn btn-link" asp-page="Index">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

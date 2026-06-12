@@ -11,7 +11,8 @@
     </div>
 </div>
 
-<table class="table table-striped align-middle">
+<h2 class="h4">Outbound events</h2>
+<table class="table table-striped align-middle mb-4">
     <thead>
     <tr><th>Created</th><th>Event</th><th>Status</th><th>Slack</th><th>Result</th></tr>
     </thead>
@@ -23,6 +24,29 @@
             <td><code>@log.EventKey</code></td>
             <td>@log.Status</td>
             <td>@log.SlackStatusCode</td>
+            <td class="text-truncate" style="max-width: 420px;">@log.ResultMessage</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h2 class="h4">Inbound Slack commands</h2>
+<table class="table table-striped align-middle">
+    <thead>
+    <tr><th>Created</th><th>Command</th><th>Slack bot</th><th>Team</th><th>Channel</th><th>User</th><th>Status</th><th>Downstream</th><th>Result</th></tr>
+    </thead>
+    <tbody>
+    @foreach (var log in Model.SlackCommandLogs)
+    {
+        <tr>
+            <td>@log.Created</td>
+            <td><code>@log.Command</code></td>
+            <td>@log.ProjectName</td>
+            <td>@log.TeamId</td>
+            <td>@log.ChannelId</td>
+            <td>@log.UserId</td>
+            <td>@log.Status</td>
+            <td>@log.DownstreamStatusCode</td>
             <td class="text-truncate" style="max-width: 420px;">@log.ResultMessage</td>
         </tr>
     }

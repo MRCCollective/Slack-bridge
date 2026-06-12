@@ -73,6 +73,9 @@ builder.Services.AddScoped<IEventDefinitionTestService, EventDefinitionTestServi
 builder.Services.AddScoped<IPlanLimitService, PlanLimitService>();
 builder.Services.AddScoped<IUsageService, UsageService>();
 builder.Services.AddScoped<IBillingService, BillingService>();
+builder.Services.AddScoped<ISlackRequestVerifier, SlackRequestVerifier>();
+builder.Services.AddScoped<ISlackCommandGatewayService, SlackCommandGatewayService>();
+builder.Services.AddHttpClient<IDownstreamSlackCommandClient, SlackCommandForwarder>();
 builder.Services.AddSingleton<ILocalClock, LocalClock>();
 builder.Services.AddScoped<EventLogCleanupJob>();
 builder.Services.AddHostedService<FailedSlackRetryWorker>();

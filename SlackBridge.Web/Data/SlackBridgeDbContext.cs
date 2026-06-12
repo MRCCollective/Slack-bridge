@@ -14,6 +14,8 @@ public sealed class SlackBridgeDbContext(DbContextOptions<SlackBridgeDbContext> 
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
     public DbSet<EventDefinition> EventDefinitions => Set<EventDefinition>();
     public DbSet<EventLog> EventLogs => Set<EventLog>();
+    public DbSet<SlackCommandRoute> SlackCommandRoutes => Set<SlackCommandRoute>();
+    public DbSet<SlackCommandLog> SlackCommandLogs => Set<SlackCommandLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -113,6 +115,45 @@ public sealed class SlackBridgeDbContext(DbContextOptions<SlackBridgeDbContext> 
             .HasOne(log => log.EventDefinition)
             .WithMany(definition => definition.EventLogs)
             .HasForeignKey(log => log.EventDefinitionId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<SlackCommandRoute>()
+            .HasIndex(route => new { route.ProjectId, route.SlackCommand });
+
+        modelBuilder.Entity<SlackCommandRoute>()
+            .HasOne(route => route.CustomerInstance)
+            .WithMany()
+            .HasForeignKey(route => route.CustomerInstanceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SlackCommandRoute>()
+            .HasOne(route => route.Project)
+            .WithMany(project => project.SlackCommandRoutes)
+            .HasForeignKey(route => route.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SlackCommandLog>()
+            .HasIndex(log => log.CreatedAtUtc);
+
+        modelBuilder.Entity<SlackCommandLog>()
+            .HasIndex(log => new { log.Command, log.TeamId });
+
+        modelBuilder.Entity<SlackCommandLog>()
+            .HasOne(log => log.CustomerInstance)
+            .WithMany()
+            .HasForeignKey(log => log.CustomerInstanceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SlackCommandLog>()
+            .HasOne(log => log.Project)
+            .WithMany()
+            .HasForeignKey(log => log.ProjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SlackCommandLog>()
+            .HasOne(log => log.SlackCommandRoute)
+            .WithMany()
+            .HasForeignKey(log => log.SlackCommandRouteId)
             .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<ApplicationUser>()

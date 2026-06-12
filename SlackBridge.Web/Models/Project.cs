@@ -23,4 +23,5 @@ public sealed class Project
 
     public ICollection<ApiKey> ApiKeys { get; set; } = [];
     public ICollection<EventDefinition> EventDefinitions { get; set; } = [];
+    public ICollection<SlackCommandRoute> SlackCommandRoutes { get; set; } = [];
 }

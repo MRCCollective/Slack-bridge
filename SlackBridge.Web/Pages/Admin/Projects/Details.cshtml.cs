@@ -23,6 +23,7 @@ public sealed class DetailsModel(
     public string? StatusMessage { get; private set; }
     public IReadOnlyList<ApiKeyRow> ApiKeys { get; private set; } = [];
     public IReadOnlyList<EventDefinitionRow> EventDefinitions { get; private set; } = [];
+    public IReadOnlyList<SlackCommandRouteRow> SlackCommandRoutes { get; private set; } = [];
     public IReadOnlyList<LogRow> Logs { get; private set; } = [];
 
     public async Task<IActionResult> OnGetAsync(int id, string? createdKey, string? statusMessage, CancellationToken cancellationToken)
@@ -115,6 +116,18 @@ public sealed class DetailsModel(
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
+        SlackCommandRoutes = await dbContext.SlackCommandRoutes
+            .Where(route => route.ProjectId == id && route.CustomerInstanceId == customerInstanceContext.CustomerInstanceId)
+            .OrderBy(route => route.SlackCommand)
+            .Select(route => new SlackCommandRouteRow(
+                route.Id,
+                route.SlackCommand,
+                route.DownstreamUrl,
+                route.AllowedTeamId,
+                route.IsActive))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
         var logs = await dbContext.EventLogs
             .Where(log => log.ProjectId == id && log.CustomerInstanceId == customerInstanceContext.CustomerInstanceId)
             .OrderByDescending(log => log.CreatedAtUtc)
@@ -146,6 +159,13 @@ public sealed class DetailsModel(
         int Id,
         string Key,
         bool UsesCustomWebhook,
+        bool IsActive);
+
+    public sealed record SlackCommandRouteRow(
+        int Id,
+        string SlackCommand,
+        string DownstreamUrl,
+        string? AllowedTeamId,
         bool IsActive);
 
     public sealed record LogRow(

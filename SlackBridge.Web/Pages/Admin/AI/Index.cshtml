@@ -49,6 +49,53 @@ Implement the Slack Bridge event described here: [describe the event, where it h
 </div>
 
 <div class="surface-card p-4 mb-4">
+    <h2 class="h4">Slash command downstream prompt</h2>
+    <pre><code>You are integrating this application with Slack Bridge inbound slash commands.
+
+Slack Bridge is already hosted separately. Do not verify Slack signatures in this app; Slack Bridge does that.
+Do not build Slack app setup, Socket Mode, modals, App Home, or Slack-specific persistence unless explicitly asked.
+
+Configuration to use:
+- SlackBridge:SlashCommandSecret = shared_secret_from_slackbridge_route
+
+HTTP contract from Slack Bridge:
+- Method: POST
+- Content-Type: application/json
+- Header: x-slackbridge-secret: {SlackBridge:SlashCommandSecret}
+- Body:
+  {
+    "type": "slash_command",
+    "teamId": "T123",
+    "teamDomain": "example",
+    "channelId": "C123",
+    "channelName": "general",
+    "userId": "U123",
+    "userName": "deprecated_from_slack_if_present_but_not_required",
+    "command": "/shoppingtajm",
+    "text": "list",
+    "triggerId": "...",
+    "responseUrl": "...",
+    "apiAppId": "...",
+    "raw": {}
+  }
+
+Response contract:
+- Return 200 with Slack-compatible JSON to reply immediately.
+- Return 204 for an empty acknowledgement.
+- Return 4xx/5xx only when Slack Bridge should show its safe fallback response.
+
+Implementation requirements:
+- Authenticate the shared secret header.
+- Keep domain parsing and business logic inside this app.
+- Return Slack JSON such as { "response_type": "ephemeral", "text": "..." }.
+- Do not log the shared secret or Slack response_url.
+- Add focused tests for command parsing and response behavior if this codebase has tests.
+
+Task:
+Implement the downstream callback for this command: [describe command behavior].</code></pre>
+</div>
+
+<div class="surface-card p-4 mb-4">
     <h2 class="h4">Reference client</h2>
     <pre><code>public sealed class SlackBridgeClient(HttpClient httpClient, IConfiguration configuration)
 {
@@ -81,11 +128,12 @@ Implement the Slack Bridge event described here: [describe the event, where it h
     <h2 class="h4">What Slack Bridge does</h2>
     <p>
         Slack Bridge is a single-tenant ASP.NET Core 9 application that receives event payloads from internal apps,
-        renders Scriban templates, and sends messages through Slack bot webhooks.
+        renders Scriban templates, sends messages through Slack bot webhooks, and forwards verified Slack slash commands
+        to downstream application callbacks.
     </p>
     <p class="mb-0">
         The app uses Razor Pages, Web API controllers, ASP.NET Core Identity, EF Core with SQL Server, hashed API keys,
-        local plan enforcement, event logs, and a hosted retry worker for failed Slack deliveries.
+        local plan enforcement, event logs, inbound command logs, and a hosted retry worker for failed Slack deliveries.
     </p>
 </div>
 
@@ -98,7 +146,7 @@ Goal: fix or add an integration without changing unrelated behavior.
 Architecture:
 - .NET 9 ASP.NET Core monolith.
 - Razor Pages admin UI under /Pages/Admin, with Slack bots as the main workspace.
-- Web API endpoint: POST /api/events.
+- Web API endpoints: POST /api/events and POST /api/slack/commands.
 - EF Core SQL Server DbContext: SlackBridgeDbContext.
 - Identity user model: ApplicationUser.
 - Customer-scoped data uses CustomerInstanceId.
@@ -114,27 +162,44 @@ Core event flow:
 6. Write EventLog for success or failure.
 7. Mark failed Slack sends for retry with FailedSlackRetryWorker.
 
+Inbound slash command flow:
+1. Receive application/x-www-form-urlencoded Slack slash command posts at /api/slack/commands.
+2. Verify X-Slack-Signature and X-Slack-Request-Timestamp with ISlackRequestVerifier.
+3. Match an active SlackCommandRoute by command and optional Slack team ID.
+4. Forward normalized SlackCommandEnvelope JSON through IDownstreamSlackCommandClient.
+5. Relay downstream Slack JSON, return empty 200 for 204, or return a safe ephemeral fallback on failure.
+6. Write SlackCommandLog rows for validation, routing, downstream status, and fallback outcomes.
+
 Important files:
 - Controllers/EventsController.cs
+- Controllers/SlackCommandsController.cs
 - Data/SlackBridgeDbContext.cs
 - Models/Project.cs
 - Models/ApiKey.cs
 - Models/EventDefinition.cs
 - Models/EventLog.cs
+- Models/SlackCommandRoute.cs
+- Models/SlackCommandLog.cs
 - Services/EventIngestionService.cs
+- Services/SlackCommandGatewayService.cs
+- Services/SlackRequestVerifier.cs
+- Services/SlackCommandForwarder.cs
 - Services/SlackService.cs
 - Services/TemplateService.cs
 - Services/UsageService.cs
 - Services/FailedSlackRetryWorker.cs
 - Pages/Admin/EventDefinitions/
+- Pages/Admin/SlackCommandRoutes/
 - Pages/Admin/Projects/Details.cshtml
 
 Rules:
 - Keep changes small and production-ready.
 - Use dependency injection.
 - Do not store raw API keys.
+- Do not store Slack signing secrets or downstream shared secrets in plain text.
 - Do not bypass Identity for admin pages.
 - Do not hardcode customer-specific logic outside ICustomerInstanceContext.
+- Do not implement app-specific slash command logic in SlackBridge.
 - Add or update EF migrations when the database model changes.
 - Run dotnet build before finishing.
 
@@ -153,6 +218,7 @@ Fix the integration issue described below.</code></pre>
                 <li>Render the Scriban template with representative JSON.</li>
                 <li>Check the Slack bot webhook URL, any enabled event-level override, and response status.</li>
                 <li>Inspect <code>EventLogs</code> for result messages and retry state.</li>
+                <li>Inspect <code>SlackCommandLogs</code> for slash command validation and downstream outcomes.</li>
                 <li>Check monthly usage limits if requests return <code>429</code>.</li>
             </ul>
         </div>
